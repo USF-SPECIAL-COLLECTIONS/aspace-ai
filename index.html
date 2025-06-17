@@ -40,6 +40,25 @@
     const responseBox = document.getElementById("response");
     const responseText = document.getElementById("responseText");
 
+    const sampleMetadata = [
+      {
+        title: "Tampa Latinx Oral History Project",
+        abstract: "Interviews with activists and community leaders documenting Latinx experiences in the Tampa Bay region."
+      },
+      {
+        title: "Centro Asturiano Records",
+        abstract: "Documents the history of the Centro Asturiano mutual aid society, a key institution for Spanish immigrants in Ybor City."
+      },
+      {
+        title: "Tampa Jewish Federation Collection",
+        abstract: "Materials relating to Jewish life and community development in Tampa from the 20th century onward."
+      },
+      {
+        title: "Florida Land Boom Papers",
+        abstract: "Records and ephemera from Tampa's real estate speculation and urban growth in the 1920s."
+      }
+    ];
+
     form.addEventListener("submit", async (e) => {
       e.preventDefault();
       const query = document.getElementById("query").value;
@@ -47,14 +66,14 @@
       responseText.textContent = "Thinking...";
 
       try {
-        const res = await fetch("https://your-server.com/ask", {
+        const res = await fetch("http://localhost:5000/ask", {
           method: "POST",
           headers: {
             "Content-Type": "application/json"
           },
           body: JSON.stringify({
             query: query,
-            context: [] // You can hardcode some example metadata or fetch it dynamically
+            context: sampleMetadata
           })
         });
         const data = await res.json();
