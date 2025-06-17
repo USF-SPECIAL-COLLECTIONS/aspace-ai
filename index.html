@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Ask the Archives AI Assistant</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      padding: 2em;
+      max-width: 700px;
+      margin: auto;
+    }
+    #response {
+      margin-top: 1em;
+      background: #f5f5f5;
+      padding: 1em;
+      border-radius: 5px;
+    }
+    textarea {
+      width: 100%;
+      height: 80px;
+    }
+  </style>
+</head>
+<body>
+  <h1>Ask the Archives AI Assistant</h1>
+  <p>Describe your research interest and the assistant will suggest relevant collections from our holdings.</p>
+  <form id="queryForm">
+    <label for="query">Your Question:</label><br>
+    <textarea id="query" required></textarea><br>
+    <button type="submit">Ask</button>
+  </form>
+  <div id="response" hidden>
+    <h3>Response:</h3>
+    <div id="responseText">Waiting for response...</div>
+  </div>
+
+  <script>
+    const form = document.getElementById("queryForm");
+    const responseBox = document.getElementById("response");
+    const responseText = document.getElementById("responseText");
+
+    const sampleMetadata = [
+      {
+        title: "Tampa Latinx Oral History Project",
+        abstract: "Interviews with activists and community leaders documenting Latinx experiences in the Tampa Bay region."
+      },
+      {
+        title: "Centro Asturiano Records",
+        abstract: "Documents the history of the Centro Asturiano mutual aid society, a key institution for Spanish immigrants in Ybor City."
+      },
+      {
+        title: "Tampa Jewish Federation Collection",
+        abstract: "Materials relating to Jewish life and community development in Tampa from the 20th century onward."
+      },
+      {
+        title: "Florida Land Boom Papers",
+        abstract: "Records and ephemera from Tampa's real estate speculation and urban growth in the 1920s."
+      }
+    ];
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const query = document.getElementById("query").value;
+      responseBox.hidden = false;
+      responseText.textContent = "Thinking...";
+
+      try {
+        const res = await fetch("https://1e61111b-978b-4325-84c9-d92c5b50a766-00-3jdfxn980yu4b.janeway.replit.dev/ask", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json"
+          },
+          body: JSON.stringify({
+            query: query,
+            context: sampleMetadata
+          })
+        });
+        const data = await res.json();
+        responseText.textContent = data.response || "No response returned.";
+      } catch (err) {
+        responseText.textContent = "There was an error reaching the assistant.";
+      }
+    });
+  </script>
+</body>
+</html>
