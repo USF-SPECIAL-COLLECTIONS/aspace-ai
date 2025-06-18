@@ -54,16 +54,27 @@
     }
     #logo {
       display: block;
-      margin: 0 auto 1em auto;
+      margin: 2em auto 1em auto;
       max-width: 220px;
       height: auto;
+    }
+    footer {
+      text-align: center;
+      margin-top: 3em;
+      font-size: 0.95em;
+    }
+    footer a {
+      color: #006747;
+      text-decoration: none;
+    }
+    footer a:hover {
+      text-decoration: underline;
     }
   </style>
 </head>
 <body>
 
 <div id="usf-banner">University of South Florida – Special Collections</div>
-<img id="logo" src="logo.png" alt="USF Libraries Logo">
 <h1>AI Archives Assistant</h1>
 
 <form id="prompt-form">
@@ -77,6 +88,11 @@
   <div id="response-heading">Response:</div>
   <div id="response-box"></div>
 </div>
+
+<footer>
+  <a href="https://lib.usf.edu/special-collections/" target="_blank">Visit USF Special Collections</a>
+  <img id="logo" src="logo.png" alt="USF Libraries Logo">
+</footer>
 
 <script>
   const sampleMetadata = [
