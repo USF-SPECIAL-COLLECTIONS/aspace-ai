@@ -20,6 +20,14 @@
       padding: 0.5em;
       font-size: 1em;
     }
+    #response-box {
+      background-color: #ffffff;
+      border: 1px solid #ccc;
+      padding: 1em;
+      border-radius: 5px;
+      margin-top: 1em;
+      white-space: pre-wrap;
+    }
   </style>
 </head>
 <body>
@@ -30,6 +38,8 @@
   <input type="text" id="prompt" name="prompt" placeholder="Ask about the archives...">
   <button type="submit">Ask</button>
 </form>
+
+<div id="response-box"></div>
 
 <script>
   const sampleMetadata = [
@@ -48,6 +58,8 @@
   document.getElementById("prompt-form").addEventListener("submit", function(event) {
     event.preventDefault();
     const promptText = document.getElementById("prompt").value;
+    const responseBox = document.getElementById("response-box");
+    responseBox.textContent = "Thinking...";
 
     fetch("https://1e61111b-978b-4325-84c9-d92c5b50a766-00-3jdfxn980yu4b.janeway.replit.dev/ask", {
       method: "POST",
@@ -61,11 +73,11 @@
     })
     .then(response => response.json())
     .then(data => {
-      alert("✅ AI Response:\n\n" + data.response);
+      responseBox.textContent = data.response;
     })
     .catch(error => {
       console.error("Error:", error);
-      alert("❌ Error contacting the AI assistant.");
+      responseBox.textContent = "❌ Error contacting the AI assistant.";
     });
   });
 </script>
