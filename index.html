@@ -23,76 +23,108 @@
     .record-card h3 {
       margin-top: 0;
     }
+    .prompt-link {
+      color: #007acc;
+      text-decoration: none;
+      cursor: pointer;
+    }
+    .prompt-link:hover {
+      text-decoration: underline;
+    }
+    #prompt-form {
+      margin-bottom: 2em;
+    }
+    #prompt {
+      width: 100%;
+      padding: 0.5em;
+      font-size: 1em;
+    }
   </style>
 </head>
 <body>
 
 <h1>Sample Collections for the AI Archives Assistant</h1>
 
+<form id="prompt-form" action="/ask" method="POST">
+  <input type="text" id="prompt" name="prompt" placeholder="Ask about the archives...">
+  <button type="submit">Ask</button>
+</form>
+
+<script>
+  function submitPrompt(promptText) {
+    const promptBox = document.getElementById("prompt");
+    if (promptBox) {
+      promptBox.value = promptText;
+      promptBox.form.requestSubmit();
+    }
+  }
+</script>
+
 <div class="record-card">
   <h3>Tony Pizzo Collection</h3>
   <p><strong>Description:</strong> Personal papers, research notes, and historical materials assembled by Tony Pizzo, a civic historian known for documenting the history of Tampa, Ybor City, and surrounding communities.</p>
-  <p><strong>Try asking:</strong> <em>"What does the Tony Pizzo Collection reveal about the history of Ybor City?"</em></p>
+  <p><strong>Try asking:</strong> <a class="prompt-link" onclick="submitPrompt('What does the Tony Pizzo Collection reveal about the history of Ybor City?')">What does the Tony Pizzo Collection reveal about the history of Ybor City?</a></p>
 </div>
 
+<!-- Additional records below updated with links -->
 <div class="record-card">
   <h3>Al Davis Papers</h3>
   <p><strong>Description:</strong> Records of African American community leader Al Davis, highlighting his work in local activism, education, and civic improvement in Tampa.</p>
-  <p><strong>Try asking:</strong> <em>"Are there materials on Black civic leaders in Tampa, like Al Davis?"</em></p>
+  <p><strong>Try asking:</strong> <a class="prompt-link" onclick="submitPrompt('Are there materials on Black civic leaders in Tampa, like Al Davis?')">Are there materials on Black civic leaders in Tampa, like Al Davis?</a></p>
 </div>
 
 <div class="record-card">
   <h3>Robert W. and Helen S. Saunders Papers</h3>
   <p><strong>Description:</strong> Documents the lives and work of two prominent civil rights activists who helped lead the NAACP in Florida and supported community organizing and education reform.</p>
-  <p><strong>Try asking:</strong> <em>"Do you have anything about civil rights organizing in mid-20th century Florida?"</em></p>
+  <p><strong>Try asking:</strong> <a class="prompt-link" onclick="submitPrompt('Do you have anything about civil rights organizing in mid-20th century Florida?')">Do you have anything about civil rights organizing in mid-20th century Florida?</a></p>
 </div>
 
 <div class="record-card">
   <h3>Jan K. Platt Papers</h3>
   <p><strong>Description:</strong> Correspondence, reports, and materials from a longtime Tampa City Council member and Hillsborough County Commissioner with a focus on environmental conservation and public policy.</p>
-  <p><strong>Try asking:</strong> <em>"What does the Jan Platt collection say about conservation efforts in Hillsborough County?"</em></p>
+  <p><strong>Try asking:</strong> <a class="prompt-link" onclick="submitPrompt('What does the Jan Platt collection say about conservation efforts in Hillsborough County?')">What does the Jan Platt collection say about conservation efforts in Hillsborough County?</a></p>
 </div>
 
 <div class="record-card">
   <h3>Environmental Lands Acquisition and Protection Program (ELAPP) Collection</h3>
   <p><strong>Description:</strong> Project files, maps, and reports documenting land conservation and environmental protection efforts across Hillsborough County from the 1980s onward.</p>
-  <p><strong>Try asking:</strong> <em>"Are there records of environmental land purchases in Hillsborough County?"</em></p>
+  <p><strong>Try asking:</strong> <a class="prompt-link" onclick="submitPrompt('Are there records of environmental land purchases in Hillsborough County?')">Are there records of environmental land purchases in Hillsborough County?</a></p>
 </div>
 
 <div class="record-card">
   <h3>Sally Thompson Collection</h3>
   <p><strong>Description:</strong> Contains newsletters, meeting minutes, and reports related to land conservation and water resource advocacy in Florida, especially through the League of Women Voters and SWFWMD.</p>
-  <p><strong>Try asking:</strong> <em>"Do you have archives about the League of Women Voters’ work on water policy?"</em></p>
+  <p><strong>Try asking:</strong> <a class="prompt-link" onclick="submitPrompt('Do you have archives about the League of Women Voters’ work on water policy?')">Do you have archives about the League of Women Voters’ work on water policy?</a></p>
 </div>
 
 <div class="record-card">
   <h3>Bobby Smith Photograph Collection</h3>
   <p><strong>Description:</strong> A photographic record of mid-20th century Tampa, featuring candid and professional shots of community events, people, and places by local photographer Bobby Smith.</p>
-  <p><strong>Try asking:</strong> <em>"Are there photographs of Tampa from the 1950s or 60s?"</em></p>
+  <p><strong>Try asking:</strong> <a class="prompt-link" onclick="submitPrompt('Are there photographs of Tampa from the 1950s or 60s?')">Are there photographs of Tampa from the 1950s or 60s?</a></p>
 </div>
 
 <div class="record-card">
   <h3>Centro Español de Tampa Collection</h3>
   <p><strong>Description:</strong> Historical records of one of Tampa’s major Spanish immigrant mutual aid societies, including financial ledgers, minutes, and membership records from the early 20th century.</p>
-  <p><strong>Try asking:</strong> <em>"What can I learn about Spanish immigrants in Tampa from the Centro Español?"</em></p>
+  <p><strong>Try asking:</strong> <a class="prompt-link" onclick="submitPrompt('What can I learn about Spanish immigrants in Tampa from the Centro Español?')">What can I learn about Spanish immigrants in Tampa from the Centro Español?</a></p>
 </div>
 
 <div class="record-card">
   <h3>IMC Agrico Phosphate Company Collection</h3>
   <p><strong>Description:</strong> Corporate and technical documentation related to phosphate mining in Florida, including maps, reports, environmental impact materials, and company correspondence.</p>
-  <p><strong>Try asking:</strong> <em>"Do you have any records about phosphate mining operations in Florida?"</em></p>
+  <p><strong>Try asking:</strong> <a class="prompt-link" onclick="submitPrompt('Do you have any records about phosphate mining operations in Florida?')">Do you have any records about phosphate mining operations in Florida?</a></p>
 </div>
 
 <div class="record-card">
   <h3>Walter P. Fuller Papers</h3>
   <p><strong>Description:</strong> Papers of St. Petersburg civic booster and businessman Walter Fuller, including materials related to city planning, tourism, and economic development in mid-century Florida.</p>
-  <p><strong>Try asking:</strong> <em>"What does the Walter Fuller collection include on early tourism development?"</em></p>
+  <p><strong>Try asking:</strong> <a class="prompt-link" onclick="submitPrompt('What does the Walter Fuller collection include on early tourism development?')">What does the Walter Fuller collection include on early tourism development?</a></p>
 </div>
 
 <div class="record-card">
   <h3>Audubon Society Corkscrew Swamp Sanctuary Records</h3>
   <p><strong>Description:</strong> Administrative records, newsletters, and correspondence detailing the operations and advocacy work of the Corkscrew Swamp Sanctuary in southwest Florida.</p>
-  <p><strong>Try asking:</strong> <em>"Do you have anything about the Audubon Society’s work in Florida?"</em></p>
+  <p><strong>Try asking:</strong> <a class="prompt-link" onclick="submitPrompt('Do you have anything about the Audubon Society’s work in Florida?')">Do you have anything about the Audubon Society’s work in Florida?</a></p>
 </div>
 
 </body>
