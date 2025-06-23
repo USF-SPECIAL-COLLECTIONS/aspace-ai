@@ -57,44 +57,61 @@
 
 <h1>AI Archives Assistant</h1>
 
-<div id="prompt-form">
-  <input type="text" id="prompt" placeholder="Ask about the archives..." />
-  <button onclick="submitPrompt()">Ask</button>
+<form id="prompt-form">
+  <input type="text" id="prompt" name="prompt" placeholder="Ask about the archives...">
+  <button type="submit">Ask</button>
+</form>
+
+<!-- Sample Multiple Cards for Display -->
+<div class="result-card">
+  <img class="thumbnail" src="https://upload.wikimedia.org/wikipedia/commons/thumb/0/04/Icon_archive.svg/512px-Icon_archive.svg.png" alt="archive icon" />
+  <div class="details">
+    <h3 class="title">Tony Pizzo Collection</h3>
+    <p class="description">
+      Personal papers, research notes, and historical materials assembled by Tony Pizzo, a civic historian known for documenting the history of Tampa, Ybor City, and surrounding communities.
+    </p>
+    <a href="https://archives.lib.usf.edu/repositories/2/resources/371" target="_blank">View Collection</a>
+  </div>
 </div>
 
+<div class="result-card">
+  <img class="thumbnail" src="https://upload.wikimedia.org/wikipedia/commons/thumb/e/e4/Archive_icon.svg/512px-Archive_icon.svg.png" alt="archive icon" />
+  <div class="details">
+    <h3 class="title">Centro Español de Tampa Collection</h3>
+    <p class="description">
+      Historical records of one of Tampa’s major Spanish immigrant mutual aid societies, including financial ledgers, minutes, and membership records from the early 20th century.
+    </p>
+    <a href="https://archives.lib.usf.edu/repositories/2/resources/567" target="_blank">View Collection</a>
+  </div>
+</div>
+
+<!-- AI Response output -->
 <div id="response-container">
   <div id="response-heading">Response:</div>
   <div id="response-box"></div>
 </div>
 
 <script>
-  async function submitPrompt() {
-    const promptInput = document.getElementById("prompt");
-    const responseBox = document.getElementById("response-box");
-    const prompt = promptInput.value;
+document.getElementById("prompt-form").addEventListener("submit", function (e) {
+  e.preventDefault();
+  const prompt = document.getElementById("prompt").value;
 
-    responseBox.innerHTML = "Thinking...";
-
-    try {
-      const res = await fetch("https://1e61111b-978b-4325-84c9-d92c5b50a766-00-3jdfxn980yu4b.janeway.replit.dev/ask", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
-        },
-        body: JSON.stringify({ prompt: prompt })
-      });
-
-      const data = await res.json();
-
-      if (data.response) {
-        responseBox.innerHTML = data.response;
-      } else {
-        responseBox.innerHTML = `<strong>Error:</strong> ${data.error}`;
-      }
-    } catch (err) {
-      responseBox.innerHTML = `<strong>Request failed:</strong> ${err.message}`;
-    }
-  }
+  fetch("/ask", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({ prompt: prompt })
+  })
+    .then(response => response.json())
+    .then(data => {
+      const responseBox = document.getElementById("response-box");
+      responseBox.innerHTML = data.response || `<span style="color:red;">${data.error}</span>`;
+    })
+    .catch(error => {
+      console.error("Error:", error);
+    });
+});
 </script>
 
 </body>
