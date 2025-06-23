@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -7,34 +8,26 @@
   <style>
     body {
       font-family: Arial, sans-serif;
-      background-color: #f4f4f4;
+      background-color: #f5f5f5;
       padding: 2em;
       max-width: 800px;
       margin: auto;
     }
-
     #prompt-form {
       margin-bottom: 2em;
     }
-
     #prompt {
       width: 100%;
       padding: 0.5em;
       font-size: 1em;
     }
-
-    button {
-      padding: 0.5em 1em;
-      font-size: 1em;
-      margin-top: 0.5em;
-    }
-
     #response-box a {
       color: #0645AD;
       text-decoration: underline;
     }
-
     .result-card {
+      display: flex;
+      align-items: flex-start;
       background-color: white;
       border: 1px solid #ccc;
       border-radius: 8px;
@@ -42,11 +35,16 @@
       margin-bottom: 1em;
       box-shadow: 2px 2px 6px rgba(0,0,0,0.1);
     }
-
+    .thumbnail {
+      width: 60px;
+      height: 60px;
+      object-fit: cover;
+      margin-right: 1em;
+      border-radius: 4px;
+    }
     .title {
       margin: 0 0 0.3em;
     }
-
     .description {
       margin: 0 0 0.5em;
     }
@@ -57,44 +55,37 @@
 <h1>AI Archives Assistant</h1>
 
 <form id="prompt-form">
-  <input type="text" id="prompt" placeholder="Ask about the archives..." required />
+  <input type="text" id="prompt" name="prompt" placeholder="Ask about the archives...">
   <button type="submit">Ask</button>
 </form>
 
+<!-- Response container -->
 <div id="response-container">
   <div id="response-heading">Response:</div>
   <div id="response-box"></div>
 </div>
 
 <script>
-document.getElementById("prompt-form").addEventListener("submit", async function(event) {
-  event.preventDefault();
+  document.getElementById("prompt-form").addEventListener("submit", function (e) {
+    e.preventDefault();
+    const prompt = document.getElementById("prompt").value;
 
-  const prompt = document.getElementById("prompt").value;
-  const responseBox = document.getElementById("response-box");
-  responseBox.innerHTML = "Loading...";
-
-  try {
-    const res = await fetch("/ask", {
+    fetch("https://1e61111b-978b-4325-84c9-d92c5b50a766-00-3jdfxn980yu4b.janeway.replit.dev/ask", {
       method: "POST",
       headers: {
         "Content-Type": "application/json"
       },
       body: JSON.stringify({ prompt })
+    })
+    .then(response => response.json())
+    .then(data => {
+      document.getElementById("response-box").innerHTML = data.response || "No response received.";
+    })
+    .catch(err => {
+      console.error("Request failed:", err);
+      document.getElementById("response-box").textContent = "Error contacting the assistant.";
     });
-
-    const data = await res.json();
-
-    if (data.response) {
-      responseBox.innerHTML = data.response;
-    } else {
-      responseBox.innerHTML = `<span style="color:red">${data.error}</span>`;
-    }
-
-  } catch (err) {
-    responseBox.innerHTML = `<span style="color:red">Request failed: ${err.message}</span>`;
-  }
-});
+  });
 </script>
 
 </body>
