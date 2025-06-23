@@ -73,5 +73,56 @@
   <div id="response-box"></div>
 </div>
 
+ <script>
+document.getElementById("prompt-form").addEventListener("submit", async function (e) {
+  e.preventDefault();
+
+  const promptInput = document.getElementById("prompt");
+  const responseBox = document.getElementById("response-box");
+
+  const userPrompt = promptInput.value.trim();
+  if (!userPrompt) return;
+
+  // Optional loading spinner text
+  responseBox.innerHTML = "<p>Searching archives...</p>";
+
+  try {
+    const response = await fetch("/ask", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ prompt: userPrompt })
+    });
+
+    if (!response.ok) {
+      throw new Error("Server error");
+    }
+
+    const data = await response.json();
+    responseBox.innerHTML = ""; // Clear previous content
+
+    // Loop through the returned results
+    data.response.forEach(item => {
+      const card = document.createElement("div");
+      card.className = "result-card";
+      card.innerHTML = `
+        <img class="thumbnail" src="${item.thumbnail || 'https://upload.wikimedia.org/wikipedia/commons/thumb/0/04/Icon_archive.svg/512px-Icon_archive.svg.png'}" alt="archive icon">
+        <div class="details">
+          <h3 class="title">${item.title}</h3>
+          <p class="description">${item.abstract}</p>
+          <a href="${item.url}" target="_blank">View Collection</a>
+        </div>
+      `;
+      responseBox.appendChild(card);
+    });
+
+  } catch (err) {
+    responseBox.innerHTML = "<p>Error reaching assistant. Please try again later.</p>";
+    console.error(err);
+  }
+});
+</script>
+  
 </body>
 </html>
