@@ -159,7 +159,8 @@
     responseBox.textContent = "";
     spinner.style.display = "block";
 
-    console.log("Sending context with", sampleMetadata.length, "items:", sampleMetadata);
+    console.log("🚀 Sending", sampleMetadata.length, "collections to the AI:");
+    console.log(sampleMetadata);
 
     fetch("https://1e61111b-978b-4325-84c9-d92c5b50a766-00-3jdfxn980yu4b.janeway.replit.dev/ask", {
       method: "POST",
