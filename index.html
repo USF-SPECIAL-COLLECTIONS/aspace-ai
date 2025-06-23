@@ -188,7 +188,7 @@
     .then(response => response.json())
     .then(data => {
       spinner.style.display = "none";
-      responseBox.textContent = data.response;
+      responseBox.innerHTML = data.response;
     })
     .catch(error => {
       spinner.style.display = "none";
