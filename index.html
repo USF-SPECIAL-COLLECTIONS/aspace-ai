@@ -1,32 +1,40 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>AI Archives Assistant</title>
   <style>
     body {
       font-family: Arial, sans-serif;
-      background-color: #f5f5f5;
+      background-color: #f4f4f4;
       padding: 2em;
       max-width: 800px;
       margin: auto;
     }
+
     #prompt-form {
       margin-bottom: 2em;
     }
+
     #prompt {
       width: 100%;
       padding: 0.5em;
       font-size: 1em;
     }
+
+    button {
+      padding: 0.5em 1em;
+      font-size: 1em;
+      margin-top: 0.5em;
+    }
+
     #response-box a {
       color: #0645AD;
       text-decoration: underline;
     }
+
     .result-card {
-      display: flex;
-      align-items: flex-start;
       background-color: white;
       border: 1px solid #ccc;
       border-radius: 8px;
@@ -34,20 +42,11 @@
       margin-bottom: 1em;
       box-shadow: 2px 2px 6px rgba(0,0,0,0.1);
     }
-    .icon {
-      font-size: 1.5em;
-      margin-right: 1em;
-    }
-    .thumbnail {
-      width: 60px;
-      height: 60px;
-      object-fit: cover;
-      margin-right: 1em;
-      border-radius: 4px;
-    }
+
     .title {
       margin: 0 0 0.3em;
     }
+
     .description {
       margin: 0 0 0.5em;
     }
@@ -58,59 +57,43 @@
 <h1>AI Archives Assistant</h1>
 
 <form id="prompt-form">
-  <input type="text" id="prompt" name="prompt" placeholder="Ask about the archives...">
+  <input type="text" id="prompt" placeholder="Ask about the archives..." required />
   <button type="submit">Ask</button>
 </form>
 
-<!-- Sample Multiple Cards for Display -->
-<div class="result-card">
-  <img class="thumbnail" src="https://upload.wikimedia.org/wikipedia/commons/thumb/0/04/Icon_archive.svg/512px-Icon_archive.svg.png" alt="archive icon" />
-  <div class="details">
-    <h3 class="title">Tony Pizzo Collection</h3>
-    <p class="description">
-      Personal papers, research notes, and historical materials assembled by Tony Pizzo, a civic historian known for documenting the history of Tampa, Ybor City, and surrounding communities.
-    </p>
-    <a href="https://archives.lib.usf.edu/repositories/2/resources/371" target="_blank">View Collection</a>
-  </div>
-</div>
-
-<div class="result-card">
-  <img class="thumbnail" src="https://upload.wikimedia.org/wikipedia/commons/thumb/e/e4/Archive_icon.svg/512px-Archive_icon.svg.png" alt="archive icon" />
-  <div class="details">
-    <h3 class="title">Centro Español de Tampa Collection</h3>
-    <p class="description">
-      Historical records of one of Tampa’s major Spanish immigrant mutual aid societies, including financial ledgers, minutes, and membership records from the early 20th century.
-    </p>
-    <a href="https://archives.lib.usf.edu/repositories/2/resources/567" target="_blank">View Collection</a>
-  </div>
-</div>
-
-<!-- AI Response output -->
 <div id="response-container">
   <div id="response-heading">Response:</div>
   <div id="response-box"></div>
 </div>
 
 <script>
-document.getElementById("prompt-form").addEventListener("submit", function (e) {
-  e.preventDefault();
-  const prompt = document.getElementById("prompt").value;
+document.getElementById("prompt-form").addEventListener("submit", async function(event) {
+  event.preventDefault();
 
-  fetch("https://1e61111b-978b-4325-84c9-d92c5b50a766-00-3jdfxn980yu4b.janeway.replit.dev/ask", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({ prompt: prompt })
-  })
-    .then(response => response.json())
-    .then(data => {
-      const responseBox = document.getElementById("response-box");
-      responseBox.innerHTML = data.response || `<span style="color:red;">${data.error}</span>`;
-    })
-    .catch(error => {
-      console.error("Error:", error);
+  const prompt = document.getElementById("prompt").value;
+  const responseBox = document.getElementById("response-box");
+  responseBox.innerHTML = "Loading...";
+
+  try {
+    const res = await fetch("/ask", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({ prompt })
     });
+
+    const data = await res.json();
+
+    if (data.response) {
+      responseBox.innerHTML = data.response;
+    } else {
+      responseBox.innerHTML = `<span style="color:red">${data.error}</span>`;
+    }
+
+  } catch (err) {
+    responseBox.innerHTML = `<span style="color:red">Request failed: ${err.message}</span>`;
+  }
 });
 </script>
 
