@@ -12,15 +12,6 @@
       max-width: 800px;
       margin: auto;
     }
-    #usf-banner {
-      background-color: #006747;
-      color: white;
-      padding: 1em;
-      text-align: center;
-      font-size: 1.25em;
-      font-weight: bold;
-      margin: -2em -2em 2em -2em;
-    }
     #prompt-form {
       margin-bottom: 2em;
     }
@@ -29,181 +20,138 @@
       padding: 0.5em;
       font-size: 1em;
     }
-    #response-container {
-      margin-top: 2em;
-    }
-    #response-heading {
-      font-weight: bold;
-      margin-bottom: 0.5em;
-    }
-    #response-box {
-      background-color: #ffffff;
-      border: 2px solid #006747;
-      padding: 1.2em;
-      border-radius: 8px;
-      white-space: pre-wrap;
-      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-      font-size: 1.05em;
-      line-height: 1.6em;
-      color: #333;
-    }
-    #loading-spinner {
-      display: none;
-      margin-top: 1em;
-      font-style: italic;
-    }
-    #logo {
-      display: block;
-      margin: 2em auto 1em auto;
-      max-width: 220px;
-      height: auto;
-    }
-    footer {
-      text-align: center;
-      margin-top: 3em;
-      font-size: 0.95em;
-    }
-    footer a {
-      color: #006747;
-      text-decoration: none;
-    }
-    footer a:hover {
+    #response-box a {
+      color: #0645AD;
       text-decoration: underline;
     }
-    .icon-image {
-      width: 60px;
-      height: 60px;
-      object-fit: cover;
-      border-radius: 4px;
+    .result-card {
+      display: flex;
+      align-items: flex-start;
+      background-color: white;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      padding: 1em;
+      margin-bottom: 1em;
+      box-shadow: 2px 2px 6px rgba(0,0,0,0.1);
+    }
+    .icon {
+      width: 50px;
+      height: 50px;
+      object-fit: contain;
       margin-right: 1em;
+    }
+    .title {
+      margin: 0 0 0.3em;
+    }
+    .description {
+      margin: 0 0 0.5em;
     }
   </style>
 </head>
 <body>
 
-<div id="usf-banner">University of South Florida – Special Collections</div>
 <h1>AI Archives Assistant</h1>
 
-<form id="prompt-form">
+<form id="prompt-form" action="/ask" method="POST">
   <input type="text" id="prompt" name="prompt" placeholder="Ask about the archives...">
   <button type="submit">Ask</button>
 </form>
 
-<div id="loading-spinner">⏳ Thinking...</div>
+<!-- Sample Metadata Records -->
+<div class="result-card">
+  <img class="icon" src="icon.png" alt="archive icon" />
+  <div class="details">
+    <h3 class="title">Tony Pizzo Collection</h3>
+    <p class="description">Personal papers, research notes, and historical materials assembled by Tony Pizzo, a civic historian known for documenting the history of Tampa, Ybor City, and surrounding communities.</p>
+    <a href="https://archives.lib.usf.edu/repositories/2/resources/371" target="_blank">View Collection</a>
+  </div>
+</div>
+<div class="result-card">
+  <img class="icon" src="icon.png" alt="archive icon" />
+  <div class="details">
+    <h3 class="title">Centro Español de Tampa Collection</h3>
+    <p class="description">Historical records of one of Tampa’s major Spanish immigrant mutual aid societies, including financial ledgers, minutes, and membership records from the early 20th century.</p>
+    <a href="https://archives.lib.usf.edu/repositories/2/resources/567" target="_blank">View Collection</a>
+  </div>
+</div>
+<div class="result-card">
+  <img class="icon" src="icon.png" alt="archive icon" />
+  <div class="details">
+    <h3 class="title">Bobby Smith Photograph Collection</h3>
+    <p class="description">A mid-to-late twentieth century collection documenting the region's LGBTQ history through photographs, ephemera, and community materials.</p>
+    <a href="https://archives.lib.usf.edu/repositories/2/resources/269" target="_blank">View Collection</a>
+  </div>
+</div>
+<div class="result-card">
+  <img class="icon" src="icon.png" alt="archive icon" />
+  <div class="details">
+    <h3 class="title">Equality Florida Records</h3>
+    <p class="description">Organizational records documenting the advocacy and political activities of Equality Florida in support of LGBTQ+ rights throughout the state.</p>
+    <a href="https://archives.lib.usf.edu/repositories/2/resources/496" target="_blank">View Collection</a>
+  </div>
+</div>
+<div class="result-card">
+  <img class="icon" src="icon.png" alt="archive icon" />
+  <div class="details">
+    <h3 class="title">Al Davis Papers</h3>
+    <p class="description">Papers related to the political and civic career of Al Davis, a notable African American community leader and activist in Tampa.</p>
+    <a href="https://archives.lib.usf.edu/repositories/2/resources/40" target="_blank">View Collection</a>
+  </div>
+</div>
+<div class="result-card">
+  <img class="icon" src="icon.png" alt="archive icon" />
+  <div class="details">
+    <h3 class="title">Robert W. and Helen S. Saunders Papers</h3>
+    <p class="description">Documents related to Robert Saunders’ work with the NAACP and the civil rights movement in Florida, including correspondence, speeches, and photographs.</p>
+    <a href="https://archives.lib.usf.edu/repositories/2/resources/313" target="_blank">View Collection</a>
+  </div>
+</div>
+<div class="result-card">
+  <img class="icon" src="icon.png" alt="archive icon" />
+  <div class="details">
+    <h3 class="title">Environmental Lands Acquisition and Protection Program (ELAPP) Collection</h3>
+    <p class="description">Records documenting land conservation efforts in Hillsborough County through ELAPP, including acquisition reports, maps, and environmental assessments.</p>
+    <a href="https://archives.lib.usf.edu/repositories/2/resources/65" target="_blank">View Collection</a>
+  </div>
+</div>
+<div class="result-card">
+  <img class="icon" src="icon.png" alt="archive icon" />
+  <div class="details">
+    <h3 class="title">Sally Thompson Collection</h3>
+    <p class="description">Materials from environmentalist Sally Thompson focusing on Florida conservation efforts, wetlands protection, and environmental advocacy.</p>
+    <a href="https://archives.lib.usf.edu/repositories/2/resources/617" target="_blank">View Collection</a>
+  </div>
+</div>
+<div class="result-card">
+  <img class="icon" src="icon.png" alt="archive icon" />
+  <div class="details">
+    <h3 class="title">IMC Agrico Phosphate Company Collection</h3>
+    <p class="description">Corporate records, environmental studies, and reports related to phosphate mining and environmental impact in Florida.</p>
+    <a href="https://archives.lib.usf.edu/repositories/2/resources/434" target="_blank">View Collection</a>
+  </div>
+</div>
+<div class="result-card">
+  <img class="icon" src="icon.png" alt="archive icon" />
+  <div class="details">
+    <h3 class="title">Walter P. Fuller Papers</h3>
+    <p class="description">Personal and business records of Walter Fuller, documenting his role in St. Petersburg's development and the local media landscape.</p>
+    <a href="https://archives.lib.usf.edu/repositories/2/resources/531" target="_blank">View Collection</a>
+  </div>
+</div>
+<div class="result-card">
+  <img class="icon" src="icon.png" alt="archive icon" />
+  <div class="details">
+    <h3 class="title">Audubon Society Corkscrew Swamp Sanctuary Records</h3>
+    <p class="description">Records documenting the environmental preservation work of the Corkscrew Swamp Sanctuary, part of the National Audubon Society's efforts in Florida.</p>
+    <a href="https://archives.lib.usf.edu/repositories/2/resources/583" target="_blank">View Collection</a>
+  </div>
+</div>
 
+<!-- AI Response output -->
 <div id="response-container">
   <div id="response-heading">Response:</div>
   <div id="response-box"></div>
 </div>
-
-<footer>
-  <a href="https://lib.usf.edu/special-collections/" target="_blank">Visit USF Special Collections</a>
-  <img id="logo" src="logo.png" alt="USF Libraries Logo">
-</footer>
-
-<script>
-  const sampleMetadata = [
-  {
-    title: "Tony Pizzo Collection",
-    abstract: "Documents the cultural and historical development of Tampa, particularly Ybor City, through correspondence, photographs, and ephemera collected by local historian Tony Pizzo.",
-    url: "https://archives.lib.usf.edu/repositories/2/resources/371"
-  },
-  {
-    title: "Bobby Smith Photograph Collection",
-    abstract: "Photographs and ephemera documenting LGBTQ community life, activism, and culture in the Tampa Bay area from the mid-20th century through the early 2000s.",
-    url: "https://archives.lib.usf.edu/repositories/2/resources/269"
-  },
-  {
-    title: "Equality Florida Records",
-    abstract: "Organizational records of Equality Florida, the state's leading civil rights organization dedicated to securing full equality for Florida's LGBTQ community.",
-    url: "https://archives.lib.usf.edu/repositories/2/resources/496"
-  },
-  {
-    title: "Al Davis Papers",
-    abstract: "Papers related to civil rights leader Al Davis, documenting his work in labor unions, political organizing, and community advocacy in Tampa.",
-    url: "https://archives.lib.usf.edu/repositories/2/resources/40"
-  },
-  {
-    title: "Robert W. and Helen S. Saunders Papers",
-    abstract: "Records of civil rights activists Robert and Helen Saunders, highlighting their work in NAACP leadership, public service, and advocacy across Florida.",
-    url: "https://archives.lib.usf.edu/repositories/2/resources/313"
-  },
-  {
-    title: "Jan K. Platt Papers",
-    abstract: "Files from the long-serving Hillsborough County Commissioner and Tampa City Council member, including environmental policy and public planning materials.",
-    url: "https://archives.lib.usf.edu/repositories/2/resources/222"
-  },
-  {
-    title: "Environmental Lands Acquisition and Protection Program (ELAPP) Collection",
-    abstract: "Records documenting the acquisition and preservation of environmentally sensitive lands in Hillsborough County through the ELAPP initiative.",
-    url: "https://archives.lib.usf.edu/repositories/2/resources/65"
-  },
-  {
-    title: "Sally Thompson Collection",
-    abstract: "Correspondence, publications, and research documenting environmental activism and land preservation efforts in the Tampa Bay area.",
-    url: "https://archives.lib.usf.edu/repositories/2/resources/617"
-  },
-  {
-    title: "Centro Español de Tampa Collection",
-    abstract: "Documents the activities and history of Centro Español, a mutual aid society supporting Spanish immigrants in Ybor City.",
-    url: "https://archives.lib.usf.edu/repositories/2/resources/567"
-  },
-  {
-    title: "IMC Agrico Phosphate Company Collection",
-    abstract: "Corporate records and photographs from a major phosphate mining company with operations across central Florida.",
-    url: "https://archives.lib.usf.edu/repositories/2/resources/434"
-  },
-  {
-    title: "Walter P. Fuller Papers",
-    abstract: "Materials related to St. Petersburg journalist, developer, and civic leader Walter P. Fuller, focusing on city planning and local politics.",
-    url: "https://archives.lib.usf.edu/repositories/2/resources/531"
-  },
-  {
-    title: "Audubon Society Corkscrew Swamp Sanctuary Records",
-    abstract: "Administrative and conservation records of the sanctuary documenting land management and environmental education efforts in Southwest Florida.",
-    url: "https://archives.lib.usf.edu/repositories/2/resources/583"
-  },
-    {
-  title: "Tampa International Gay and Lesbian Film Festival Collection",
-  abstract: "Archival materials documenting the history and cultural significance of one of the longest-running LGBTQ+ film festivals in the southeastern United States. Includes promotional materials, programs, press coverage, and organizational records that reflect the evolving portrayal and reception of queer cinema and activism in Tampa Bay.",
-  url: "https://archives.lib.usf.edu/repositories/2/resources/641"
-}
-];
-
-
-  document.getElementById("prompt-form").addEventListener("submit", function(event) {
-    event.preventDefault();
-    const promptText = document.getElementById("prompt").value;
-    const responseBox = document.getElementById("response-box");
-    const spinner = document.getElementById("loading-spinner");
-    responseBox.textContent = "";
-    spinner.style.display = "block";
-
-    console.log("🚀 Sending", sampleMetadata.length, "collections to the AI:");
-    console.log(sampleMetadata);
-
-    fetch("https://1e61111b-978b-4325-84c9-d92c5b50a766-00-3jdfxn980yu4b.janeway.replit.dev/ask", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify({
-        query: promptText,
-        context: sampleMetadata
-      })
-    })
-    .then(response => response.json())
-    .then(data => {
-      spinner.style.display = "none";
-      responseBox.innerHTML = data.response;
-    })
-    .catch(error => {
-      spinner.style.display = "none";
-      console.error("Error:", error);
-      responseBox.textContent = "❌ Error contacting the AI assistant.";
-    });
-  });
-</script>
 
 </body>
 </html>
