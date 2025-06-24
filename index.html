@@ -1,23 +1,29 @@
-
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>AI Archives Assistant</title>
   <style>
     body {
       font-family: Arial, sans-serif;
       background-color: #f5f5f5;
       padding: 2em;
-      max-width: 900px;
+      max-width: 800px;
       margin: auto;
     }
+    header, footer {
+      text-align: center;
+      margin-bottom: 2em;
+    }
     #prompt-form {
+      display: flex;
+      gap: 0.5em;
       margin-bottom: 2em;
     }
     #prompt {
-      width: 100%;
+      flex: 1;
       padding: 0.5em;
       font-size: 1em;
     }
@@ -29,39 +35,41 @@
       display: flex;
       align-items: flex-start;
       background-color: white;
-      border: 1px solid #0a4d3c;
+      border: 1px solid #ccc;
       border-radius: 8px;
       padding: 1em;
       margin-bottom: 1em;
-      box-shadow: 2px 2px 6px rgba(0,0,0,0.1);
+      box-shadow: 2px 2px 6px rgba(0, 0, 0, 0.1);
     }
-    .result-card img {
-      width: 64px;
-      height: 64px;
+    .icon {
+      width: 50px;
+      height: 50px;
       object-fit: cover;
       margin-right: 1em;
-    }
-    .details {
-      flex: 1;
-    }
-    .title {
-      margin: 0 0 0.3em;
-      font-weight: bold;
-    }
-    .description {
-      margin: 0 0 0.5em;
+      border-radius: 4px;
     }
   </style>
 </head>
+
 <body>
-  <h1>AI Archives Assistant</h1>
-  <form id="prompt-form" method="POST" action="/ask">
+  <header>
+    <img src="icon.png" alt="USF Libraries Logo" class="icon" />
+    <h1>AI Archives Assistant</h1>
+  </header>
+
+  <form id="prompt-form">
     <input type="text" id="prompt" name="prompt" placeholder="Ask about the archives..." />
     <button type="submit">Ask</button>
   </form>
 
-  <div id="response-heading"><strong>Response:</strong></div>
-  <div id="response-box"></div>
+  <div id="response-container">
+    <div id="response-heading">Response:</div>
+    <div id="response-box"></div>
+  </div>
+
+  <footer>
+    <p><a href="https://lib.usf.edu/special-collections/" target="_blank">Visit Special Collections</a></p>
+  </footer>
 
   <script>
     const sampleMetadata = [
@@ -71,72 +79,72 @@
         "url": "https://archives.lib.usf.edu/repositories/2/resources/371"
       },
       {
-        "title": "Al Davis Papers",
-        "description": "Records of African American community leader Al Davis, highlighting his work in local activism, education, and civic improvement in Tampa.",
-        "url": "https://archives.lib.usf.edu/repositories/2/resources/40"
-      },
-      {
-        "title": "Robert W. and Helen S. Saunders Papers",
-        "description": "Documents the lives and work of two prominent civil rights activists who helped lead the NAACP in Florida and supported community organizing and education reform.",
-        "url": "https://archives.lib.usf.edu/repositories/2/resources/313"
-      },
-      {
-        "title": "Jan K. Platt Papers",
-        "description": "Correspondence, reports, and materials from a longtime Tampa City Council member and Hillsborough County Commissioner with a focus on environmental conservation and public policy.",
-        "url": "https://archives.lib.usf.edu/repositories/2/resources/222"
-      },
-      {
-        "title": "Environmental Lands Acquisition and Protection Program (ELAPP) Collection",
-        "description": "Project files, maps, and reports documenting land conservation and environmental protection efforts across Hillsborough County from the 1980s onward.",
-        "url": "https://archives.lib.usf.edu/repositories/2/resources/65"
-      },
-      {
-        "title": "Sally Thompson Collection",
-        "description": "Contains newsletters, meeting minutes, and reports related to land conservation and water resource advocacy in Florida, especially through the League of Women Voters and SWFWMD.",
-        "url": "https://archives.lib.usf.edu/repositories/2/resources/617"
-      },
-      {
-        "title": "Bobby Smith Photograph Collection",
-        "description": "A photographic record of mid–20th century Tampa, featuring candid and professional shots of community events, people, and places by local photographer Bobby Smith.",
-        "url": "https://archives.lib.usf.edu/repositories/2/resources/269"
-      },
-      {
         "title": "Centro Español de Tampa Collection",
         "description": "Historical records of one of Tampa’s major Spanish immigrant mutual aid societies, including financial ledgers, minutes, and membership records from the early 20th century.",
         "url": "https://archives.lib.usf.edu/repositories/2/resources/567"
       },
       {
-        "title": "IMC Agrico Phosphate Company Collection",
-        "description": "Corporate and technical documentation related to phosphate mining in Florida including maps, reports, environmental impact materials, and company correspondence.",
-        "url": "https://archives.lib.usf.edu/repositories/2/resources/434"
-      },
-      {
-        "title": "Walter P. Fuller Papers",
-        "description": "Papers of St. Petersburg civic booster and businessman Walter Fuller, including materials related to city planning, tourism, and economic development in mid-century Florida.",
-        "url": "https://archives.lib.usf.edu/repositories/2/resources/531"
-      },
-      {
-        "title": "Audubon Society Corkscrew Swamp Sanctuary Records",
-        "description": "Documentation on the preservation and scientific research conducted at Corkscrew Swamp, one of the nation's most significant wetland preserves.",
-        "url": "https://archives.lib.usf.edu/repositories/2/resources/583"
-      },
-      {
-        "title": "Tampa International Gay and Lesbian Film Festival Collection",
-        "description": "Promotional materials, programs, and administrative records from one of the oldest LGBTQ+ film festivals in the southeastern United States.",
-        "url": "https://archives.lib.usf.edu/repositories/2/resources/641"
+        "title": "Bobby Smith Photograph Collection",
+        "description": "A mid-to-late twentieth century collection documenting the region’s LGBTQ history through photographs and ephemera.",
+        "url": "https://archives.lib.usf.edu/repositories/2/resources/269"
       },
       {
         "title": "Equality Florida Records",
-        "description": "Organizational records from Florida's leading LGBTQ+ advocacy group, including outreach materials, campaign documents, and legislative initiatives.",
+        "description": "Organizational records documenting LGBTQ+ advocacy, legislation, events, and community-building efforts in Florida.",
         "url": "https://archives.lib.usf.edu/repositories/2/resources/496"
+      },
+      {
+        "title": "Tampa International Gay and Lesbian Film Festival Records",
+        "description": "Posters, programs, and administrative records related to the LGBTQ+ film festival that has operated in Tampa since the 1990s.",
+        "url": "https://archives.lib.usf.edu/repositories/2/resources/641"
+      },
+      {
+        "title": "Environmental Lands Acquisition and Protection Program (ELAPP) Collection",
+        "description": "Records and planning documents associated with land conservation efforts across Hillsborough County.",
+        "url": "https://archives.lib.usf.edu/repositories/2/resources/65"
+      },
+      {
+        "title": "Jan K. Platt Papers",
+        "description": "City councilwoman and county commissioner Jan Platt’s materials related to local governance, environmental issues, and public service.",
+        "url": "https://archives.lib.usf.edu/repositories/2/resources/222"
+      },
+      {
+        "title": "Al Davis Papers",
+        "description": "Documents the life and career of Al Davis, a prominent African American educator and civic leader in Tampa.",
+        "url": "https://archives.lib.usf.edu/repositories/2/resources/40"
+      },
+      {
+        "title": "Robert W. and Helen S. Saunders Papers",
+        "description": "The papers of civil rights activists Robert and Helen Saunders, chronicling their work with the NAACP and other social justice causes.",
+        "url": "https://archives.lib.usf.edu/repositories/2/resources/313"
+      },
+      {
+        "title": "Walter P. Fuller Papers",
+        "description": "Civic and real estate leader Walter Fuller's correspondence and documents related to the development of St. Petersburg.",
+        "url": "https://archives.lib.usf.edu/repositories/2/resources/531"
+      },
+      {
+        "title": "IMC Agrico Phosphate Company Collection",
+        "description": "Corporate records and environmental documents related to phosphate mining in Central Florida.",
+        "url": "https://archives.lib.usf.edu/repositories/2/resources/434"
+      },
+      {
+        "title": "Sally Thompson Collection",
+        "description": "Materials related to civic leadership, urban planning, and preservation activities in the Tampa Bay area.",
+        "url": "https://archives.lib.usf.edu/repositories/2/resources/617"
+      },
+      {
+        "title": "Audubon Society Corkscrew Swamp Sanctuary Records",
+        "description": "Environmental and conservation records documenting the history and activities of the Corkscrew Swamp Sanctuary.",
+        "url": "https://archives.lib.usf.edu/repositories/2/resources/583"
       }
     ];
 
-    document.getElementById("prompt-form").addEventListener("submit", async function (event) {
-      event.preventDefault();
+    document.getElementById("prompt-form").addEventListener("submit", async (e) => {
+      e.preventDefault();
       const promptText = document.getElementById("prompt").value;
       const responseBox = document.getElementById("response-box");
-      responseBox.innerHTML = "Thinking...";
+      responseBox.innerHTML = "Loading...";
 
       try {
         const response = await fetch("https://1e61111b-978b-4325-84c9-d92c5b50a766-00-3jdfxn980yu4b.janeway.replit.dev/ask", {
@@ -144,19 +152,17 @@
           headers: {
             "Content-Type": "application/json"
           },
-          body: JSON.stringify({
-            query: promptText,
-            context: sampleMetadata
-          })
+          body: JSON.stringify({ query: promptText, context: sampleMetadata })
         });
 
-        const data = await response.json();
-        responseBox.innerHTML = data.response;
-      } catch (error) {
-        console.error("Fetch error:", error);
-        responseBox.innerHTML = "⚠️ Error contacting the AI assistant.";
+        const result = await response.json();
+        responseBox.innerHTML = result.response || result.error || "No response.";
+      } catch (err) {
+        responseBox.innerHTML = "Error contacting the AI Assistant.";
+        console.error(err);
       }
     });
   </script>
 </body>
+
 </html>
