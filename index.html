@@ -155,11 +155,39 @@
   </div>
 </div>
 
-<!-- AI Response output -->
-<div id="response-container">
-  <div id="response-heading">Response:</div>
-  <div id="response-box"></div>
-</div>
+document.getElementById("prompt-form").addEventListener("submit", function(event) {
+    event.preventDefault();
+    const promptText = document.getElementById("prompt").value;
+    const responseBox = document.getElementById("response-box");
+    const spinner = document.getElementById("loading-spinner");
+    responseBox.textContent = "";
+    spinner.style.display = "block";
+
+    console.log("🚀 Sending", sampleMetadata.length, "collections to the AI:");
+    console.log(sampleMetadata);
+
+    fetch("https://1e61111b-978b-4325-84c9-d92c5b50a766-00-3jdfxn980yu4b.janeway.replit.dev/ask", {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json"
+      },
+      body: JSON.stringify({
+        query: promptText,
+        context: sampleMetadata
+      })
+    })
+    .then(response => response.json())
+    .then(data => {
+      spinner.style.display = "none";
+      responseBox.innerHTML = data.response;
+    })
+    .catch(error => {
+      spinner.style.display = "none";
+      console.error("Error:", error);
+      responseBox.textContent = "❌ Error contacting the AI assistant.";
+    });
+  });
+</script>
 
 </body>
 </html>
