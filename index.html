@@ -1,131 +1,89 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>AI Archives Assistant</title>
-    <style>
+  <style>
     body {
       font-family: Arial, sans-serif;
       background-color: #f5f5f5;
-      padding: 2em;
-      max-width: 800px;
-      margin: auto;
+      margin: 0;
+      padding: 0;
     }
-    .collection-icon {
-    width: 80px;         /* Reduce size */
-    height: auto;
-    margin-right: 1em;
-    vertical-align: middle;
-    border-radius: 4px;
-  }
-    #usf-banner {
+    header {
       background-color: #006747;
       color: white;
-      padding: 1em;
-      text-align: center;
-      font-size: 1.25em;
-      font-weight: bold;
-      margin: -2em -2em 2em -2em;
+      padding: 0.65em 1em;
+      display: flex;
+      align-items: center;
     }
-    #prompt-form {
-      margin-bottom: 2em;
+    header img {
+      height: 40px;
+      margin-right: 1em;
+    }
+    header h1 {
+      margin: 0;
+      font-size: 1.5em;
+    }
+    main {
+      max-width: 800px;
+      margin: auto;
+      padding: 2em;
     }
     #prompt {
       width: 100%;
       padding: 0.5em;
       font-size: 1em;
     }
-    #response-container {
-      margin-top: 2em;
+    #submit {
+      padding: 0.5em 1em;
+      font-size: 1em;
+      margin-top: 0.5em;
     }
-    #response-heading {
-      font-weight: bold;
-      margin-bottom: 0.5em;
-    }
-.result-card {
-  display: flex;
-  align-items: flex-start;  /* Align icon to the top of the text */
-  background-color: white;
-  border: 1px solid #ccc;
-  border-radius: 8px;
-  padding: .75em;
-  margin-bottom: 1em;
-  box-shadow: 2px 2px 6px rgba(0, 0, 0, 0.1);
-}
-.thumbnail {
-  width: 40px;
-  height: 40px;
-  object-fit: cover;
-  border-radius: 4px;
-  flex-shrink: 0;
-}
-
-.details {
-  flex: 1;
-   }  
-    #response-box {
-      background-color: #ffffff;
-      border: 2px solid #006747;
-      padding: 1.2em;
-      border-radius: 8px;
-      white-space: pre-wrap;
-      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-      font-size: 1.05em;
-      line-height: 1.6em;
-      color: #333;
-    }
-    #loading-spinner {
-      display: none;
-      margin-top: 1em;
-      font-style: italic;
-    }
-    #logo {
-       width: 150px; /* adjust as needed */
-      height: auto;
-      display: block;
-      margin: 0 auto 1em auto; /* center and add spacing below */
-    }
-  footer {
-      text-align: center;
-      margin-top: 3em;
-      font-size: 0.95em;
-    }
-    footer a {
-      color: #006747;
-      text-decoration: none;
-    }
-    footer a:hover {
+    #response-box a {
+      color: #0645AD;
       text-decoration: underline;
+    }
+    .result-card {
+      display: flex;
+      align-items: flex-start;
+      background-color: white;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+      padding: 1em;
+      margin-bottom: 1em;
+      box-shadow: 2px 2px 6px rgba(0, 0, 0, 0.1);
+    }
+    .thumbnail {
+      width: 50px;
+      height: 50px;
+      object-fit: contain;
+      margin-right: 1em;
+    }
+    .details {
+      flex: 1;
+    }
+    .title {
+      margin: 0 0 0.3em;
+    }
+    .description {
+      margin: 0 0 0.5em;
     }
   </style>
 </head>
-
 <body>
-  <!-- USF Green Header -->
-<header style="background-color: #006747; color: white; padding: 0.4em 1em; text-align: center; font-size: 1.4em; font-weight: bold; margin-bottom: 1em;">
-  University of South Florida Libraries – Special Collections
-</header>
-
   <header>
-    <img id="logo" src="logo.png" alt="USF Libraries Logo">
-    <h1>AI Archives Assistant</h1>
+    <img src="icon.png" alt="Logo" />
+    <h1>University of South Florida - AI Archives Assistant</h1>
   </header>
-
-  <form id="prompt-form">
-    <input type="text" id="prompt" name="prompt" placeholder="Ask about the archives..." />
-    <button type="submit">Ask</button>
-  </form>
-
-  <div id="response-container">
-    <div id="response-heading">Response:</div>
+  <main>
+    <form id="prompt-form">
+      <input type="text" id="prompt" name="prompt" placeholder="Ask about the archives..." />
+      <button id="submit" type="submit">Ask</button>
+    </form>
     <div id="response-box"></div>
-  </div>
-
-  <footer>
-    <p><a href="https://lib.usf.edu/special-collections/" target="_blank">Visit Special Collections</a></p>
-  </footer>
+  </main>
 
   <script>
     const sampleMetadata = [
@@ -140,59 +98,59 @@
         "url": "https://archives.lib.usf.edu/repositories/2/resources/567"
       },
       {
-        "title": "Bobby Smith Photograph Collection",
-        "description": "A mid-to-late twentieth century collection documenting the region’s LGBTQ history through photographs and ephemera.",
-        "url": "https://archives.lib.usf.edu/repositories/2/resources/269"
+        "title": "Tampa Urban League Collection",
+        "description": "Documents civil rights initiatives and African American community support services provided by the Tampa Urban League throughout the 20th century.",
+        "url": "https://archives.lib.usf.edu/repositories/2/resources/230"
       },
       {
-        "title": "Equality Florida Records",
-        "description": "Organizational records documenting LGBTQ+ advocacy, legislation, events, and community-building efforts in Florida.",
-        "url": "https://archives.lib.usf.edu/repositories/2/resources/496"
+        "title": "Florida Environmental Activism Records",
+        "description": "Materials related to grassroots environmental advocacy in Florida, including correspondence, flyers, and legal documents from various conservation efforts.",
+        "url": "https://archives.lib.usf.edu/repositories/2/resources/432"
       },
       {
         "title": "Tampa International Gay and Lesbian Film Festival Records",
-        "description": "Posters, programs, and administrative records related to the LGBTQ+ film festival that has operated in Tampa since the 1990s.",
-        "url": "https://archives.lib.usf.edu/repositories/2/resources/641"
-      },
-      {
-        "title": "Environmental Lands Acquisition and Protection Program (ELAPP) Collection",
-        "description": "Records and planning documents associated with land conservation efforts across Hillsborough County.",
-        "url": "https://archives.lib.usf.edu/repositories/2/resources/65"
-      },
-      {
-        "title": "Jan K. Platt Papers",
-        "description": "City councilwoman and county commissioner Jan Platt’s materials related to local governance, environmental issues, and public service.",
+        "description": "Event programs, press releases, and organizational files documenting one of the longest-running LGBTQ+ film festivals in the southeastern United States.",
         "url": "https://archives.lib.usf.edu/repositories/2/resources/222"
       },
       {
-        "title": "Al Davis Papers",
-        "description": "Documents the life and career of Al Davis, a prominent African American educator and civic leader in Tampa.",
-        "url": "https://archives.lib.usf.edu/repositories/2/resources/40"
+        "title": "José Martí Park Dedication Materials",
+        "description": "Historical background, photographs, and correspondence surrounding the dedication of José Martí Park in Ybor City, highlighting Cuban-American cultural heritage.",
+        "url": "https://archives.lib.usf.edu/repositories/2/resources/591"
       },
       {
-        "title": "Robert W. and Helen S. Saunders Papers",
-        "description": "The papers of civil rights activists Robert and Helen Saunders, chronicling their work with the NAACP and other social justice causes.",
-        "url": "https://archives.lib.usf.edu/repositories/2/resources/313"
+        "title": "Equality Florida Records - Not Florida Organizational Outreach, Inc. Records",
+        "description": "Campaign materials, strategic planning documents, and correspondence from Equality Florida, the state’s largest LGBTQ+ civil rights organization.",
+        "url": "https://archives.lib.usf.edu/repositories/2/resources/585"
       },
       {
-        "title": "Walter P. Fuller Papers",
-        "description": "Civic and real estate leader Walter Fuller's correspondence and documents related to the development of St. Petersburg.",
-        "url": "https://archives.lib.usf.edu/repositories/2/resources/531"
+        "title": "Ybor City Museum Society Oral Histories",
+        "description": "Audio interviews and transcripts with longtime residents of Ybor City, capturing stories of immigration, labor, and neighborhood transformation.",
+        "url": "https://archives.lib.usf.edu/repositories/2/resources/375"
       },
       {
-        "title": "IMC Agrico Phosphate Company Collection",
-        "description": "Corporate records and environmental documents related to phosphate mining in Central Florida.",
-        "url": "https://archives.lib.usf.edu/repositories/2/resources/434"
+        "title": "League of Women Voters of Hillsborough County Records",
+        "description": "Meeting minutes, voter education materials, and advocacy records from one of Florida’s most active civic engagement organizations.",
+        "url": "https://archives.lib.usf.edu/repositories/2/resources/409"
       },
       {
-        "title": "Sally Thompson Collection",
-        "description": "Materials related to civic leadership, urban planning, and preservation activities in the Tampa Bay area.",
-        "url": "https://archives.lib.usf.edu/repositories/2/resources/617"
+        "title": "NAACP Tampa Chapter Records",
+        "description": "Documents the efforts of the Tampa chapter of the NAACP in advocating for African American rights, education, and political representation.",
+        "url": "https://archives.lib.usf.edu/repositories/2/resources/489"
       },
       {
-        "title": "Audubon Society Corkscrew Swamp Sanctuary Records",
-        "description": "Environmental and conservation records documenting the history and activities of the Corkscrew Swamp Sanctuary.",
-        "url": "https://archives.lib.usf.edu/repositories/2/resources/583"
+        "title": "Latin American and Caribbean Student Organization Records",
+        "description": "Meeting records, event posters, and publications from a student group advocating for Latin American and Caribbean cultural awareness.",
+        "url": "https://archives.lib.usf.edu/repositories/2/resources/560"
+      },
+      {
+        "title": "Bicentennial Celebration Records",
+        "description": "Programs, planning files, and memorabilia from Tampa’s 1976 bicentennial celebration, reflecting local patriotic initiatives.",
+        "url": "https://archives.lib.usf.edu/repositories/2/resources/450"
+      },
+      {
+        "title": "Lambda Association Records",
+        "description": "Administrative records, newsletters, and photographs from a USF student organization supporting LGBTQ+ individuals on campus.",
+        "url": "https://archives.lib.usf.edu/repositories/2/resources/368"
       }
     ];
 
@@ -200,25 +158,21 @@
       e.preventDefault();
       const promptText = document.getElementById("prompt").value;
       const responseBox = document.getElementById("response-box");
-      responseBox.innerHTML = "Loading...";
+      responseBox.innerHTML = "<p><em>Loading...</em></p>";
 
       try {
-        const response = await fetch("https://1e61111b-978b-4325-84c9-d92c5b50a766-00-3jdfxn980yu4b.janeway.replit.dev/ask", {
+        const res = await fetch("https://1e61111b-978b-4325-84c9-d92c5b50a766-00-3jdfxn980yu4b.janeway.replit.dev/ask", {
           method: "POST",
-          headers: {
-            "Content-Type": "application/json"
-          },
+          headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ query: promptText, context: sampleMetadata })
         });
 
-        const result = await response.json();
-        responseBox.innerHTML = result.response || result.error || "No response.";
+        const data = await res.json();
+        responseBox.innerHTML = data.response || "<p><em>No response received.</em></p>";
       } catch (err) {
-        responseBox.innerHTML = "Error contacting the AI Assistant.";
-        console.error(err);
+        responseBox.innerHTML = "<p><em>Error contacting the AI Assistant.</em></p>";
       }
     });
   </script>
 </body>
-
 </html>
