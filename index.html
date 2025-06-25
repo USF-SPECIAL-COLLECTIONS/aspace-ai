@@ -204,13 +204,16 @@
   const responseBox = document.getElementById("response-box");
   responseBox.innerHTML = "<p><em>Loading response...</em></p>";
 
-  // Build metadata array from DOM
-  const metadataCards = document.querySelectorAll(".result-card[data-title]");
-  const metadata = Array.from(metadataCards).map(card => ({
-    title: card.getAttribute("data-title"),
-    description: card.getAttribute("data-description"),
-    url: card.getAttribute("data-url")
-  }));
+ document.getElementById("prompt-form").addEventListener("submit", async function (e) {
+  e.preventDefault();
+
+  const promptInput = document.getElementById("prompt");
+  const promptText = promptInput.value.trim();
+  const responseBox = document.getElementById("response-box");
+  responseBox.innerHTML = "<p><em>Loading response...</em></p>";
+
+  // Use the predefined sample metadata directly
+  const metadata = sampleMetadata;
 
   try {
     const response = await fetch("https://1e61111b-978b-4325-84c9-d92c5b50a766-00-3jdfxn980yu4b.janeway.replit.dev/ask", {
@@ -239,11 +242,10 @@
       }
     }
 
-    // Replace escaped characters with real HTML
     const cleaned = result
-      .replace(/\n/g, "")           // Remove raw \n line breaks
-      .replace(/\\"/g, '"')         // Fix escaped quotes
-      .replace(/\\'/g, "'");        // Fix escaped single quotes
+      .replace(/\n/g, "")
+      .replace(/\\"/g, '"')
+      .replace(/\\'/g, "'");
 
     responseBox.innerHTML = cleaned;
 
