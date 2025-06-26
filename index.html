@@ -232,43 +232,36 @@
   </script>
  <script src="https://cdn.jsdelivr.net/npm/socket.io-client@4.5.4/dist/socket.io.min.js"></script>
 <script>
-  const socket = io("https://1e61111b-978b-4325-84c9-d92c5b50a766-00-3jdfxn980yu4b.janeway.replit.dev/");
+    const socket = io("https://1e61111b-978b-4325-84c9-d92c5b50a766-00-3jdfxn980yu4b.janeway.replit.dev/");
+    const form = document.getElementById("search-form");
+    const input = document.getElementById("query");
+    const responseBox = document.getElementById("response");
 
-  const form = document.getElementById("prompt-form");
-  const input = document.getElementById("prompt");
-  const responseBox = document.getElementById("response-box");
+    form.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const query = input.value.trim();
+      if (!query) return;
 
-  form.addEventListener("submit", (e) => {
-    e.preventDefault();
-    const query = input.value.trim();
-    if (!query) return;
+      responseBox.innerHTML = "<em>Loading...</em>";
 
-    responseBox.innerHTML = ""; // Clear previous response
+      const context = sampleMetadata || [];
+      socket.emit("ask", { query, context });
+    });
 
-    // Use the correct sample metadata
-    const context = sampleMetadata || [];
+    socket.on("stream", (data) => {
+      responseBox.insertAdjacentHTML("beforeend", data);
+      responseBox.scrollTop = responseBox.scrollHeight;
+    });
 
-    // Emit query and context to backend
-    socket.emit("ask", { query, context });
-  });
+    socket.on("done", () => {
+      console.log("Streaming complete");
+    });
 
-  // Stream handler
-  socket.on("stream", (data) => {
-    responseBox.innerHTML += data;
-  });
-
-  // Signal done
-  socket.on("done", () => {
-    console.log("Streaming complete");
-  });
-
-  // Error handler
-  socket.on("response", (data) => {
-    if (data.startsWith("Error:")) {
-      responseBox.innerHTML = `<p style="color:red;">${data}</p>`;
-    }
-  });
-</script>
-
+    socket.on("response", (data) => {
+      if (data.startsWith("Error:")) {
+        responseBox.innerHTML = `<p style="color:red;">${data}</p>`;
+      }
+    });
+  </script>
 </body>
 </html>
