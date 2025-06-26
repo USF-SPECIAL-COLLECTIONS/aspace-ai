@@ -232,17 +232,25 @@
   </script>
  <script src="https://cdn.jsdelivr.net/npm/socket.io-client@4.5.4/dist/socket.io.min.js"></script>
 <script>
+    <script>
+  document.addEventListener("DOMContentLoaded", () => {
     const socket = io("https://1e61111b-978b-4325-84c9-d92c5b50a766-00-3jdfxn980yu4b.janeway.replit.dev/");
+
     const form = document.getElementById("search-form");
     const input = document.getElementById("query");
     const responseBox = document.getElementById("response");
+
+    if (!form || !input || !responseBox) {
+      console.error("Form or input or responseBox not found in DOM");
+      return;
+    }
 
     form.addEventListener("submit", (e) => {
       e.preventDefault();
       const query = input.value.trim();
       if (!query) return;
 
-      responseBox.innerHTML = "<em>Loading...</em>";
+      responseBox.innerHTML = "";
 
       const context = sampleMetadata || [];
       socket.emit("ask", { query, context });
@@ -262,6 +270,8 @@
         responseBox.innerHTML = `<p style="color:red;">${data}</p>`;
       }
     });
-  </script>
+  });
+</script>
+
 </body>
 </html>
