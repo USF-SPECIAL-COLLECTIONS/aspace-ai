@@ -232,11 +232,11 @@
 
  <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
 <script>
-  const socket = io("https://1e61111b-978b-4325-84c9-d92c5b50a766-00-3jdfxn980yu4b.janeway.replit.dev/"); // Replace with your actual Replit backend URL
+  const socket = io("https://1e61111b-978b-4325-84c9-d92c5b50a766-00-3jdfxn980yu4b.janeway.replit.dev/");
 
-  const form = document.getElementById("search-form");
-  const input = document.getElementById("query");
-  const responseBox = document.getElementById("response");
+  const form = document.getElementById("prompt-form");
+  const input = document.getElementById("prompt");
+  const responseBox = document.getElementById("response-box");
 
   form.addEventListener("submit", (e) => {
     e.preventDefault();
@@ -245,29 +245,30 @@
 
     responseBox.innerHTML = ""; // Clear previous response
 
-    // Prepare the metadata context from the embedded array
+    // Use the correct sample metadata
     const context = sampleMetadata || [];
 
-    // Emit the query to the backend
+    // Emit query and context to backend
     socket.emit("ask", { query, context });
   });
 
-  // Streamed content handler
+  // Stream handler
   socket.on("stream", (data) => {
     responseBox.innerHTML += data;
   });
 
-  // Optional completion handler
+  // Signal done
   socket.on("done", () => {
     console.log("Streaming complete");
   });
 
-  // Error handling
+  // Error handler
   socket.on("response", (data) => {
     if (data.startsWith("Error:")) {
       responseBox.innerHTML = `<p style="color:red;">${data}</p>`;
     }
   });
 </script>
+
 </body>
 </html>
