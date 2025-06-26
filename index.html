@@ -232,38 +232,41 @@
 
  <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
 <script>
-  const socket = io("https://1e61111b-978b-4325-84c9-d92c5b50a766-00-3jdfxn980yu4b.janeway.replit.dev/", {
-    transports: ["websocket"]
-  });
+  const socket = io("https://your-replit-url.repl.co"); // Replace with your actual Replit backend URL
 
-  const form = document.getElementById("query-form");
-  const input = document.getElementById("query-input");
-  const responseBox = document.getElementById("response-box");
+  const form = document.getElementById("search-form");
+  const input = document.getElementById("query");
+  const responseBox = document.getElementById("response");
 
-  form.addEventListener("submit", (event) => {
-    event.preventDefault();
+  form.addEventListener("submit", (e) => {
+    e.preventDefault();
     const query = input.value.trim();
     if (!query) return;
 
-    responseBox.innerHTML = "<p><em>Thinking...</em></p>";
+    responseBox.innerHTML = ""; // Clear previous response
 
-    // Your metadata should already be in JS array called `sampleMetadata`
-    socket.emit("ask", { query, context: sampleMetadata });
+    // Prepare the metadata context from the embedded array
+    const context = sampleMetadata || [];
 
-    let accumulated = "";
-    socket.on("stream", (data) => {
-      accumulated += data;
-      responseBox.innerHTML = accumulated;
-    });
+    // Emit the query to the backend
+    socket.emit("ask", { query, context });
+  });
 
-    socket.on("done", () => {
-      socket.off("stream");
-      socket.off("done");
-    });
+  // Streamed content handler
+  socket.on("stream", (data) => {
+    responseBox.innerHTML += data;
+  });
 
-    socket.on("error", (err) => {
-      responseBox.innerHTML = `<p style="color:red;">Error: ${err}</p>`;
-    });
+  // Optional completion handler
+  socket.on("done", () => {
+    console.log("Streaming complete");
+  });
+
+  // Error handling
+  socket.on("response", (data) => {
+    if (data.startsWith("Error:")) {
+      responseBox.innerHTML = `<p style="color:red;">${data}</p>`;
+    }
   });
 </script>
 </body>
