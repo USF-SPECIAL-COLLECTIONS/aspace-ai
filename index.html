@@ -230,53 +230,41 @@
       }
     ];
 
- document.getElementById("prompt-form").addEventListener("submit", async function (e) {
-  e.preventDefault();
+ <script src="https://cdn.socket.io/4.5.4/socket.io.min.js"></script>
+<script>
+  const socket = io("https://your-replit-url-here", {
+    transports: ["websocket"]
+  });
 
-  const promptInput = document.getElementById("prompt");
-  const promptText = promptInput.value.trim();
+  const form = document.getElementById("query-form");
+  const input = document.getElementById("query-input");
   const responseBox = document.getElementById("response-box");
-  responseBox.innerHTML = "<p><em>Loading response...</em></p>";
 
-  // Use the predefined sample metadata directly
-  const metadata = sampleMetadata;
+  form.addEventListener("submit", (event) => {
+    event.preventDefault();
+    const query = input.value.trim();
+    if (!query) return;
 
-  try {
-    const response = await fetch("https://1e61111b-978b-4325-84c9-d92c5b50a766-00-3jdfxn980yu4b.janeway.replit.dev/ask", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        query: promptText,
-        context: metadata
-      })
+    responseBox.innerHTML = "<p><em>Thinking...</em></p>";
+
+    // Your metadata should already be in JS array called `sampleMetadata`
+    socket.emit("ask", { query, context: sampleMetadata });
+
+    let accumulated = "";
+    socket.on("stream", (data) => {
+      accumulated += data;
+      responseBox.innerHTML = accumulated;
     });
 
-    if (!response.ok) {
-      throw new Error(`Error ${response.status}: ${response.statusText}`);
-    }
+    socket.on("done", () => {
+      socket.off("stream");
+      socket.off("done");
+    });
 
-    const reader = response.body.getReader();
-const decoder = new TextDecoder("utf-8");
-let result = "";
-let done = false;
-
-responseBox.innerHTML = ""; // clear previous content
-
-while (!done) {
-  const { value, done: doneReading } = await reader.read();
-  done = doneReading;
-  if (value) {
-    const chunk = decoder.decode(value, { stream: true });
-    result += chunk;
-
-    // Show content as it's received
-    responseBox.innerHTML = result
-      .replace(/\n/g, "")
-      .replace(/\\"/g, '"')
-      .replace(/\\'/g, "'");
-  }
-}
-
-  </script>
+    socket.on("error", (err) => {
+      responseBox.innerHTML = `<p style="color:red;">Error: ${err}</p>`;
+    });
+  });
+</script>
 </body>
 </html>
