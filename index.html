@@ -266,7 +266,9 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   socket.on("stream", (data) => {
-    responseBox.insertAdjacentHTML("beforeend", data);
+    const wrapper = document.createElement("div");
+    wrapper.innerHTML = data;
+    responseBox.appendChild(wrapper);
     responseBox.scrollTop = responseBox.scrollHeight;
   });
 
