@@ -232,50 +232,54 @@
   </script>
     <script src="https://cdn.jsdelivr.net/npm/socket.io-client@4.5.4/dist/socket.io.min.js"></script>
   <script>
-    document.addEventListener("DOMContentLoaded", () => {
-    const socket = io("wss://1e61111b-978b-4325-84c9-d92c5b50a766-00-3jdfxn980yu4b.janeway.replit.dev", {
-    transports: ["websocket"]
-    });
-    socket.on("connect", () => {
-    console.log("Connected to backend via Socket.IO");
-    console.log("Socket connected?", socket.connected);  
-    });  
-    const form = document.getElementById("prompt-form");
-    const input = document.getElementById("prompt");
-    const responseBox = document.getElementById("response-box");
-
-    if (!form || !input || !responseBox) {
-      console.error("Form or input or responseBox not found in DOM");
-      return;
-    }
-
-    form.addEventListener("submit", (e) => {
-      e.preventDefault();
-      const query = input.value.trim();
-      if (!query) return;
-
-      responseBox.innerHTML = "";
-
-      const context = sampleMetadata || [];
-      socket.emit("ask", { query, context });
-    });
-
-    socket.on("stream", (data) => {
-      responseBox.insertAdjacentHTML("beforeend", data);
-      responseBox.scrollTop = responseBox.scrollHeight;
-    });
-
-    socket.on("done", () => {
-      console.log("Streaming complete");
-    });
-
-    socket.on("response", (data) => {
-      if (data.startsWith("Error:")) {
-        responseBox.innerHTML = `<p style="color:red;">${data}</p>`;
-      }
-    });
+    <script>
+document.addEventListener("DOMContentLoaded", () => {
+  const socket = io("wss://<your-replit-url>", {
+    transports: ["websocket"],
   });
+
+  console.log("Socket connected?", socket.connected);
+
+  socket.on("connect", () => {
+    console.log("Connected to backend via Socket.IO");
+  });
+
+  const form = document.getElementById("prompt-form");
+  const input = document.getElementById("prompt");
+  const responseBox = document.getElementById("response-box");
+
+  if (!form || !input || !responseBox) {
+    console.error("Form, input, or responseBox not found in DOM");
+    return;
+  }
+
+  form.addEventListener("submit", (e) => {
+    e.preventDefault();
+    const query = input.value.trim();
+    if (!query) return;
+
+    responseBox.innerHTML = "";
+
+    const context = sampleMetadata || []; // if you're using pre-loaded metadata
+    console.log("Emitting ask with:", query, context);
+    socket.emit("ask", { query, context });
+  });
+
+  socket.on("stream", (data) => {
+    responseBox.insertAdjacentHTML("beforeend", data);
+    responseBox.scrollTop = responseBox.scrollHeight;
+  });
+
+  socket.on("done", () => {
+    console.log("Streaming complete.");
+  });
+
+  socket.on("response", (data) => {
+    responseBox.innerHTML = `<div class="error">${data}</div>`;
+  });
+});
 </script>
+
 
 </body>
 </html>
