@@ -234,7 +234,8 @@
   <script>
     document.addEventListener("DOMContentLoaded", () => {
     const socket = io("https://1e61111b-978b-4325-84c9-d92c5b50a766-00-3jdfxn980yu4b.janeway.replit.dev/");
-
+    console.log("Socket connected?", socket.connected);
+      
     const form = document.getElementById("prompt-form");
     const input = document.getElementById("prompt");
     const responseBox = document.getElementById("response-box");
