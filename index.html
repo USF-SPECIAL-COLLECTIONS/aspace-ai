@@ -233,7 +233,8 @@
     <script src="https://cdn.jsdelivr.net/npm/socket.io-client@4.5.4/dist/socket.io.min.js"></script>
   <script>
     document.addEventListener("DOMContentLoaded", () => {
-    const socket = io("wss://1e61111b-978b-4325-84c9-d92c5b50a766-00-3jdfxn980yu4b.janeway.replit.dev", {
+    const socket = io("https://1e61111b-978b-4325-84c9-d92c5b50a766-00-3jdfxn980yu4b.janeway.replit.dev", {
+    transports: ["websocket", "polling"]
     });
     console.log("Socket connected?", socket.connected);
     socket.on("connect", () => {
