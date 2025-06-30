@@ -306,6 +306,17 @@ socket.on("done", () => {
     cursorSpan.remove();
     cursorSpan = null;
   }
+socket.on("response", (data) => {
+  if (data.startsWith("Error:")) {
+    responseBox.innerHTML = `<div style="color: red;"><strong>${data}</strong></div>`;
+    if (cursorSpan) {
+      cursorSpan.remove();
+      cursorSpan = null;
+    }
+  }
+});
+
+  
 });
 
   </script>
