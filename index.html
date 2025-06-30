@@ -110,6 +110,31 @@
       line-height: 1.6em;
       color: #333;
     }
+    /* CSS for the loading animation */
+      .loading-ellipsis span {
+      opacity: 0;
+      animation: loading-fade 1s infinite;
+    }
+
+    .loading-ellipsis span:nth-child(2) {
+    animation-delay: 0.2s;
+    }
+
+    .loading-ellipsis span:nth-child(3) {
+    animation-delay: 0.4s;
+}
+
+@keyframes loading-fade {
+  0% {
+    opacity: 0;
+  }
+  50% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}  
     #loading-spinner {
       display: none;
       margin-top: 1em;
@@ -263,7 +288,7 @@
       if (!query) return;
 
       // Clear the response box and the temporary variable for the new query.
-      responseBox.innerHTML = "Thinking...";
+     responseBox.innerHTML = 'Thinking<span class="loading-ellipsis"><span>.</span><span>.</span><span>.</span></span>';
       completeResponse = ""; 
 
       const context = sampleMetadata || [];
