@@ -232,6 +232,7 @@
   </script>
     <script src="https://cdn.jsdelivr.net/npm/socket.io-client@4.5.4/dist/socket.io.min.js"></script>
   <script>
+ <script>
   document.addEventListener("DOMContentLoaded", () => {
   const socket = io("wss://1e61111b-978b-4325-84c9-d92c5b50a766-00-3jdfxn980yu4b.janeway.replit.dev/", {
   transports: ["websocket"],
@@ -239,7 +240,10 @@
 
   const form = document.getElementById("prompt-form");
   const input = document.getElementById("prompt");
-  const button = form.querySelector("button"); // Get the button element
+  const button = form.querySelector("button"); 
+  
+  // --- THIS IS THE MISSING LINE TO ADD ---
+  const responseBox = document.getElementById("response-box");
 
   // This event fires only when the connection is successful
   socket.on("connect", () => {
@@ -250,8 +254,6 @@
     button.disabled = false;
     input.placeholder = "Ask about the archives..."; // Update placeholder text
   });
-
-  // The rest of your code remains the same...
   
   if (!form || !input || !responseBox) {
     console.error("Form, input, or responseBox not found in DOM");
@@ -284,6 +286,7 @@
     responseBox.innerHTML = `<div>${data}</div>`;
   });
 });
+</script>
 
 </body>
 </html>
