@@ -6,7 +6,31 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>AI Archives Assistant</title>
     <style>
-    body {
+    <style>
+  .blinking-cursor {
+    display: inline-block;
+    width: 8px;
+    animation: blink 1s step-start infinite;
+    color: #333;
+  }
+
+  @keyframes blink {
+    50% {
+      opacity: 0;
+    }
+  }
+
+  .response-box {
+    white-space: pre-wrap;
+    font-family: Arial, sans-serif;
+    padding: 1rem;
+    border: 1px solid #006644;
+    background: #f8fdf8;
+    margin-top: 10px;
+    max-height: 400px;
+    overflow-y: auto;
+  }         
+      body {
       font-family: Arial, sans-serif;
       background-color: #f5f5f5;
       padding: 2em;
@@ -98,23 +122,7 @@
 
 .details {
   flex: 1;
-   }  
-    #response-box {
-      background-color: #ffffff;
-      border: 2px solid #006747;
-      padding: 1.2em;
-      border-radius: 8px;
-      white-space: pre-wrap;
-      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
-      font-size: 1.05em;
-      line-height: 1.6em;
-      color: #333;
-    }
-    #loading-spinner {
-      display: none;
-      margin-top: 1em;
-      font-style: italic;
-    }
+}
     #logo {
        width: 150px; /* adjust as needed */
       height: auto;
@@ -270,25 +278,36 @@
       socket.emit("ask", { query, context });
     });
 
-    // STEP 1: Change the 'stream' handler
-    // Instead of updating the page, just add the chunk to our variable.
-    socket.on("stream", (data) => {
-      completeResponse += data;
-    });
+    let cursorSpan = null;
 
-    // STEP 2: Change the 'done' handler
-    // When the stream is finished, render the complete HTML all at once.
-    socket.on("done", () => {
-      console.log("Streaming complete. Rendering final response.");
-      responseBox.innerHTML = completeResponse;
-      responseBox.scrollTop = responseBox.scrollHeight;
-    });
+socket.on("stream", (data) => {
+  // Create or append text node
+  const lastNode = responseBox.lastChild;
+  if (lastNode && lastNode.nodeType === Node.TEXT_NODE) {
+    lastNode.textContent += data;
+  } else {
+    responseBox.appendChild(document.createTextNode(data));
+  }
 
-    socket.on("response", (data) => {
-      // This is for handling errors
-      responseBox.innerHTML = `<div>${data}</div>`;
-    });
-  });
+  // Append blinking cursor if not already present
+  if (!cursorSpan) {
+    cursorSpan = document.createElement("span");
+    cursorSpan.className = "blinking-cursor";
+    cursorSpan.textContent = "█";
+    responseBox.appendChild(cursorSpan);
+  }
+
+  responseBox.scrollTop = responseBox.scrollHeight;
+});
+
+socket.on("done", () => {
+  console.log("Streaming complete.");
+  if (cursorSpan) {
+    cursorSpan.remove();
+    cursorSpan = null;
+  }
+});
+
   </script>
 </body>
 </html>
