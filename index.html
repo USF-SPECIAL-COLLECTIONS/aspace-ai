@@ -233,6 +233,7 @@
     <script src="https://cdn.jsdelivr.net/npm/socket.io-client@4.5.4/dist/socket.io.min.js"></script>
   <script>
     <script>
+document.addEventListener("DOMContentLoaded", () => {
   const socket = io("wss://1e61111b-978b-4325-84c9-d92c5b50a766-00-3jdfxn980yu4b.janeway.replit.dev/", {
     transports: ["websocket"],
   });
@@ -257,17 +258,18 @@
     const query = input.value.trim();
     if (!query) return;
 
-    responseBox.innerHTML = ""; // Clear previous content
+    responseBox.innerHTML = "";
 
-    const context = sampleMetadata || []; // your metadata array
+    const context = sampleMetadata || []; // if you're using pre-loaded metadata
     console.log("Emitting ask with:", query, context);
     socket.emit("ask", { query, context });
   });
 
   socket.on("stream", (data) => {
-    responseBox.innerHTML += data;
-    responseBox.scrollTop = responseBox.scrollHeight;
-  });
+  responseBox.innerHTML += data;
+  responseBox.scrollTop = responseBox.scrollHeight;
+});
+
 
   socket.on("done", () => {
     console.log("Streaming complete.");
@@ -276,6 +278,7 @@
   socket.on("response", (data) => {
     responseBox.innerHTML = `<div class="error">${data}</div>`;
   });
+});
 </script>
 
 
