@@ -232,61 +232,63 @@
   </script>
     <script src="https://cdn.jsdelivr.net/npm/socket.io-client@4.5.4/dist/socket.io.min.js"></script>
   <script>
- 
   document.addEventListener("DOMContentLoaded", () => {
-  const socket = io("wss://1e61111b-978b-4325-84c9-d92c5b50a766-00-3jdfxn980yu4b.janeway.replit.dev/", {
-  transports: ["websocket"],
-});
+    // This variable will hold the complete response as it streams in.
+    let completeResponse = "";
 
-  const form = document.getElementById("prompt-form");
-  const input = document.getElementById("prompt");
-  const button = form.querySelector("button"); 
-  
-  // --- THIS IS THE MISSING LINE TO ADD ---
-  const responseBox = document.getElementById("response-box");
+    const socket = io("wss://1e61111b-978b-4325-84c9-d92c5b50a766-00-3jdfxn980yu4b.janeway.replit.dev/", {
+      transports: ["websocket"],
+    });
 
-  // This event fires only when the connection is successful
-  socket.on("connect", () => {
-    console.log("Connected to backend via Socket.IO");
-    
-    // Enable the form now that we are connected
-    input.disabled = false;
-    button.disabled = false;
-    input.placeholder = "Ask about the archives..."; // Update placeholder text
+    const form = document.getElementById("prompt-form");
+    const input = document.getElementById("prompt");
+    const button = form.querySelector("button");
+    const responseBox = document.getElementById("response-box");
+
+    socket.on("connect", () => {
+      console.log("Connected to backend via Socket.IO");
+      input.disabled = false;
+      button.disabled = false;
+      input.placeholder = "Ask about the archives...";
+    });
+
+    if (!form || !input || !responseBox) {
+      console.error("Form, input, or responseBox not found in DOM");
+      return;
+    }
+
+    form.addEventListener("submit", (e) => {
+      e.preventDefault();
+      const query = input.value.trim();
+      if (!query) return;
+
+      // Clear the response box and the temporary variable for the new query.
+      responseBox.innerHTML = "Thinking...";
+      completeResponse = ""; 
+
+      const context = sampleMetadata || [];
+      socket.emit("ask", { query, context });
+    });
+
+    // STEP 1: Change the 'stream' handler
+    // Instead of updating the page, just add the chunk to our variable.
+    socket.on("stream", (data) => {
+      completeResponse += data;
+    });
+
+    // STEP 2: Change the 'done' handler
+    // When the stream is finished, render the complete HTML all at once.
+    socket.on("done", () => {
+      console.log("Streaming complete. Rendering final response.");
+      responseBox.innerHTML = completeResponse;
+      responseBox.scrollTop = responseBox.scrollHeight;
+    });
+
+    socket.on("response", (data) => {
+      // This is for handling errors
+      responseBox.innerHTML = `<div>${data}</div>`;
+    });
   });
-  
-  if (!form || !input || !responseBox) {
-    console.error("Form, input, or responseBox not found in DOM");
-    return;
-  }
-
-  form.addEventListener("submit", (e) => {
-    e.preventDefault();
-    const query = input.value.trim();
-    if (!query) return;
-
-    responseBox.innerHTML = "";
-
-    const context = sampleMetadata || [];
-    console.log("Emitting ask with:", query, context);
-    // Now, this will only fire when the socket is guaranteed to be connected
-    socket.emit("ask", { query, context });
-  });
-
-  socket.on("stream", (data) => {
-    responseBox.innerHTML += data;
-    responseBox.scrollTop = responseBox.scrollHeight;
-  });
-
-  socket.on("done", () => {
-    console.log("Streaming complete.");
-  });
-
-  socket.on("response", (data) => {
-    responseBox.innerHTML = `<div>${data}</div>`;
-  });
-});
-</script>
-
+  </script>
 </body>
 </html>
