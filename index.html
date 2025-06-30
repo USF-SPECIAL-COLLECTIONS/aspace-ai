@@ -265,12 +265,9 @@
   });
 
  socket.on("stream", (data) => {
-  const lastNode = responseBox.lastChild;
-  if (lastNode && lastNode.nodeType === Node.TEXT_NODE) {
-    lastNode.textContent += data;
-  } else {
-    responseBox.appendChild(document.createTextNode(data));
-  }
+  // Append the incoming HTML stream directly to the response box
+  responseBox.innerHTML += data;
+  // Auto-scroll to the bottom to show the latest content
   responseBox.scrollTop = responseBox.scrollHeight;
 });
 
