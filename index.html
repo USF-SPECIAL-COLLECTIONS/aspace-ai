@@ -264,8 +264,13 @@
     socket.emit("ask", { query, context });
   });
 
-  socket.on("stream", (data) => {
-  responseBox.innerHTML += data;
+ socket.on("stream", (data) => {
+  const lastNode = responseBox.lastChild;
+  if (lastNode && lastNode.nodeType === Node.TEXT_NODE) {
+    lastNode.textContent += data;
+  } else {
+    responseBox.appendChild(document.createTextNode(data));
+  }
   responseBox.scrollTop = responseBox.scrollHeight;
 });
 
