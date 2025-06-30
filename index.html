@@ -266,11 +266,10 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   socket.on("stream", (data) => {
-    const wrapper = document.createElement("div");
-    wrapper.innerHTML = data;
-    responseBox.appendChild(wrapper);
-    responseBox.scrollTop = responseBox.scrollHeight;
-  });
+  responseBox.innerHTML += data;
+  responseBox.scrollTop = responseBox.scrollHeight;
+});
+
 
   socket.on("done", () => {
     console.log("Streaming complete.");
