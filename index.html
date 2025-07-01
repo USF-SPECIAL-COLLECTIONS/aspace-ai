@@ -289,65 +289,56 @@
       }
     ];
   </script>
-    <script src="https://cdn.jsdelivr.net/npm/socket.io-client@4.5.4/dist/socket.io.min.js"></script>
-  <script>
-  document.addEventListener("DOMContentLoaded", () => {
-    // This variable will hold the complete response as it streams in.
-    let completeResponse = "";
+ document.addEventListener("DOMContentLoaded", () => {
+  const form = document.getElementById("prompt-form");
+  const input = document.getElementById("prompt");
+  const button = form.querySelector("button");
+  const responseBox = document.getElementById("response-box");
 
-    const socket = io("https://3umenides.pythonanywhere.com/", {
+  // We can enable the form immediately now
+  input.disabled = false;
+  button.disabled = false;
+  input.placeholder = "Ask about the archives...";
 
-    });
+  // This function will handle the form submission
+  const handleSubmit = async (event) => {
+    event.preventDefault();
+    const query = input.value.trim();
+    if (!query) return;
 
-    const form = document.getElementById("prompt-form");
-    const input = document.getElementById("prompt");
-    const button = form.querySelector("button");
-    const responseBox = document.getElementById("response-box");
+    // Show a "Thinking..." message
+    responseBox.innerHTML = 'Thinking<span class="loading-ellipsis"><span>.</span><span>.</span><span>.</span></span>';
+    button.disabled = true; // Disable button during request
 
-    socket.on("connect", () => {
-      console.log("Connected to backend via Socket.IO");
-      input.disabled = false;
-      button.disabled = false;
-      input.placeholder = "Ask about the archives...";
-    });
+    try {
+      // Use 'fetch' to send the data to our new API endpoint
+      const response = await fetch("https://3umenides.pythonanywhere.com/ask", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ query: query }),
+      });
 
-    if (!form || !input || !responseBox) {
-      console.error("Form, input, or responseBox not found in DOM");
-      return;
+      if (!response.ok) {
+        throw new Error(`Server error: ${response.status}`);
+      }
+
+      const data = await response.json();
+
+      // Display the complete response at once
+      responseBox.innerHTML = data.response;
+
+    } catch (error) {
+      console.error("Fetch error:", error);
+      responseBox.innerHTML = "Sorry, an error occurred while getting a response.";
+    } finally {
+      button.disabled = false; // Re-enable button
     }
+  };
 
-    form.addEventListener("submit", (e) => {
-      e.preventDefault();
-      const query = input.value.trim();
-      if (!query) return;
-
-      // Clear the response box and the temporary variable for the new query.
-     responseBox.innerHTML = 'Thinking<span class="loading-ellipsis"><span>.</span><span>.</span><span>.</span></span>';
-      completeResponse = ""; 
-
-      const context = sampleMetadata || [];
-      socket.emit("ask", { query, context });
-    });
-
-    // STEP 1: Change the 'stream' handler
-    // Instead of updating the page, just add the chunk to our variable.
-    socket.on("stream", (data) => {
-      completeResponse += data;
-    });
-
-    // STEP 2: Change the 'done' handler
-    // When the stream is finished, render the complete HTML all at once.
-    socket.on("done", () => {
-      console.log("Streaming complete. Rendering final response.");
-      responseBox.innerHTML = completeResponse;
-      responseBox.scrollTop = responseBox.scrollHeight;
-    });
-
-    socket.on("response", (data) => {
-      // This is for handling errors
-      responseBox.innerHTML = `<div>${data}</div>`;
-    });
-  });
+  form.addEventListener("submit", handleSubmit);
+});
   </script>
 </body>
 </html>
