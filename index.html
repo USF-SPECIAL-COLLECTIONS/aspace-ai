@@ -233,77 +233,118 @@
   </footer>
   
   <script>
- document.addEventListener("DOMContentLoaded", () => {
-  const form = document.getElementById("prompt-form");
-  const input = document.getElementById("prompt");
-  const button = form.querySelector("button");
-  const responseBox = document.getElementById("response-box");
+    document.addEventListener("DOMContentLoaded", () => {
+      const form = document.getElementById("prompt-form");
+      const input = document.getElementById("prompt");
+      const button = form.querySelector("button");
+      const responseBox = document.getElementById("response-box");
+      const collectionsOnlyCheckbox = document.getElementById('collections-only-checkbox');
 
-  // We can enable the form immediately now
-  input.disabled = false;
-  button.disabled = false;
-  input.placeholder = "Ask about the archives...";
+      // Global state for our search results
+      let allResultUris = [];
+      let currentBatch = 0;
+      const BATCH_SIZE = 7;
 
-  // This function will handle the form submission
-  const handleSubmit = async (event) => {
-    event.preventDefault();
-    const query = input.value.trim();
-    if (!query) return;
+      input.disabled = false;
+      button.disabled = false;
+      input.placeholder = "Ask about the archives...";
+      
+      const fetchAndDisplayBatch = async (query) => {
+        const start = currentBatch * BATCH_SIZE;
+        const end = start + BATCH_SIZE;
+        const batchUris = allResultUris.slice(start, end);
 
-    const collectionsOnly = document.getElementById('collections-only-checkbox').checked;
+        if (batchUris.length === 0) {
+            // Remove "Show More" button if no more results
+            const showMoreButton = document.getElementById('show-more-btn');
+            if(showMoreButton) showMoreButton.remove();
+            return;
+        }
 
-    button.disabled = true;
+        // Add a "loading more" message if it's not the first batch
+        if (currentBatch > 0) {
+            responseBox.innerHTML += 'Thinking<span class="loading-ellipsis"><span>.</span><span>.</span><span>.</span></span>';
+        }
 
-    const messages = [
-      'Extracting keywords...',
-      'Searching the archives...',
-      'Analyzing relevant results...',
-      'Formatting the response...'
-    ];
-    let messageIndex = 0;
-    
-    const showNextMessage = () => {
-      if (messageIndex < messages.length) {
-        responseBox.innerHTML = `${messages[messageIndex]}<span class="loading-ellipsis"><span>.</span><span>.</span><span>.</span></span>`;
-        messageIndex++;
-      }
-    };
+        try {
+            const response = await fetch("https://3umenides.pythonanywhere.com/process_results", {
+                method: "POST",
+                headers: {"Content-Type": "application/json"},
+                body: JSON.stringify({ uris: batchUris, original_query: query }),
+            });
+            const data = await response.json();
 
-    showNextMessage();
-    const progressInterval = setInterval(showNextMessage, 3000);
+            // Replace "Thinking..." message with new results
+            if (currentBatch > 0) {
+                responseBox.innerHTML = responseBox.innerHTML.replace(/Thinking<span class="loading-ellipsis">.*?<\/span>/, '');
+            } else {
+                responseBox.innerHTML = ''; // Clear initial message
+            }
+            
+            responseBox.innerHTML += data.response; // Append new results
+            currentBatch++;
 
-    try {
-      const response = await fetch("https://3umenides.pythonanywhere.com/ask", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ 
-          query: query,
-          collections_only: collectionsOnly 
-        }),
-      });
+            // Remove old "Show More" button before adding a new one
+            const oldShowMoreButton = document.getElementById('show-more-btn');
+            if(oldShowMoreButton) oldShowMoreButton.remove();
 
-      if (!response.ok) {
-        throw new Error(`Server error: ${response.status}`);
-      }
+            // If there are more results left, show the "Show More" button
+            if (currentBatch * BATCH_SIZE < allResultUris.length) {
+                const showMoreButton = document.createElement('button');
+                showMoreButton.id = 'show-more-btn';
+                showMoreButton.textContent = 'Show More Results';
+                showMoreButton.style.cssText = 'display:block; margin: 1em auto; padding: 0.5em 1em; cursor:pointer;';
+                showMoreButton.onclick = () => fetchAndDisplayBatch(query);
+                responseBox.appendChild(showMoreButton);
+            }
+        } catch (error) {
+            console.error("Fetch error:", error);
+            responseBox.innerHTML = "Sorry, an error occurred while getting more results.";
+        }
+      };
 
-      const data = await response.json();
-      responseBox.innerHTML = data.response;
+      const handleSubmit = async (event) => {
+        event.preventDefault();
+        const query = input.value.trim();
+        if (!query) return;
 
-    // --- CORRECTION IS HERE ---
-    // Added the required opening curly brace '{' for the catch block
-    } catch (error) {
-      console.error("Fetch error:", error);
-      responseBox.innerHTML = "Sorry, an error occurred while getting a response.";
-    // --- END CORRECTION ---
-    } finally {
-      clearInterval(progressInterval);
-      button.disabled = false; // Re-enable button
-    }
-  };
-  form.addEventListener("submit", handleSubmit);
-});
-    </script>
+        // Reset state for a new search
+        allResultUris = [];
+        currentBatch = 0;
+        const collectionsOnly = collectionsOnlyCheckbox.checked;
+        button.disabled = true;
+        responseBox.innerHTML = 'Finding all potential results<span class="loading-ellipsis"><span>.</span><span>.</span><span>.</span></span>';
+
+        try {
+          const response = await fetch("https://3umenides.pythonanywhere.com/ask", {
+            method: "POST",
+            headers: {"Content-Type": "application/json"},
+            body: JSON.stringify({ query: query, collections_only: collectionsOnly }),
+          });
+
+          if (!response.ok) throw new Error(`Server error: ${response.status}`);
+          
+          const data = await response.json();
+          allResultUris = data.results;
+
+          if (allResultUris.length === 0) {
+            responseBox.innerHTML = "<p>No relevant collections or items found in the archives for your query. Please try rephrasing your search.</p>";
+            return;
+          }
+
+          // Fetch and display the first batch of results
+          fetchAndDisplayBatch(query);
+
+        } catch (error) {
+          console.error("Fetch error:", error);
+          responseBox.innerHTML = "Sorry, an error occurred while searching.";
+        } finally {
+          button.disabled = false;
+        }
+      };
+
+      form.addEventListener("submit", handleSubmit);
+    });
+  </script>
 </body>
 </html>
