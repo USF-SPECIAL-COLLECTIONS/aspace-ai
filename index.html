@@ -246,12 +246,31 @@
     const query = input.value.trim();
     if (!query) return;
 
-    // Show a "Thinking..." message
-    responseBox.innerHTML = 'Thinking<span class="loading-ellipsis"><span>.</span><span>.</span><span>.</span></span>';
     button.disabled = true; // Disable button during request
 
+    // --- NEW: Progress Message Logic ---
+    const messages = [
+      'Extracting keywords...',
+      'Searching the archives...',
+      'Analyzing relevant results...',
+      'Formatting the response...'
+    ];
+    let messageIndex = 0;
+    
+    // This function updates the message in the response box
+    const showNextMessage = () => {
+      if (messageIndex < messages.length) {
+        responseBox.innerHTML = `${messages[messageIndex]}<span class="loading-ellipsis"><span>.</span><span>.</span><span>.</span></span>`;
+        messageIndex++;
+      }
+    };
+
+    // Show the first message immediately and then cycle through the rest
+    showNextMessage();
+    const progressInterval = setInterval(showNextMessage, 3000); // Change message every 3 seconds
+    // --- END: Progress Message Logic ---
+
     try {
-      // Use 'fetch' to send the data to our new API endpoint
       const response = await fetch("https://3umenides.pythonanywhere.com/ask", {
         method: "POST",
         headers: {
@@ -265,17 +284,18 @@
       }
 
       const data = await response.json();
-
-      // Display the complete response at once
       responseBox.innerHTML = data.response;
 
     } catch (error) {
       console.error("Fetch error:", error);
       responseBox.innerHTML = "Sorry, an error occurred while getting a response.";
     } finally {
+      // IMPORTANT: Stop the message cycling once the process is complete
+      clearInterval(progressInterval);
       button.disabled = false; // Re-enable button
     }
   };
+
   form.addEventListener("submit", handleSubmit);
 });
     </script>
