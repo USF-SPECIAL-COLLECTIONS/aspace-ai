@@ -250,13 +250,10 @@
     const query = input.value.trim();
     if (!query) return;
 
-    // --- ADD THIS LINE ---
-    // Get the status of our new checkbox
     const collectionsOnly = document.getElementById('collections-only-checkbox').checked;
 
-    button.disabled = true; // Disable button during request
+    button.disabled = true;
 
-    // (The progress message logic remains the same)
     const messages = [
       'Extracting keywords...',
       'Searching the archives...',
@@ -281,8 +278,6 @@
         headers: {
           "Content-Type": "application/json",
         },
-        // --- MODIFY THIS PART ---
-        // Send the checkbox status along with the query
         body: JSON.stringify({ 
           query: query,
           collections_only: collectionsOnly 
@@ -296,15 +291,17 @@
       const data = await response.json();
       responseBox.innerHTML = data.response;
 
-    } catch (error)
+    // --- CORRECTION IS HERE ---
+    // Added the required opening curly brace '{' for the catch block
+    } catch (error) {
       console.error("Fetch error:", error);
       responseBox.innerHTML = "Sorry, an error occurred while getting a response.";
+    // --- END CORRECTION ---
     } finally {
       clearInterval(progressInterval);
       button.disabled = false; // Re-enable button
     }
   };
-
   form.addEventListener("submit", handleSubmit);
 });
     </script>
