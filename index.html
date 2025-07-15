@@ -330,12 +330,9 @@
           
           allResultUris = data.aspace_results; 
           
-          // --- THIS IS THE FIX ---
-          // Re-enable the button as soon as the initial search is done.
-          button.disabled = false;
-          
           if ((!allResultUris || allResultUris.length === 0) && !data.vector_context) {
             responseBox.innerHTML = "<p>No relevant collections or items found in the archives for your query. Please try rephrasing your search.</p>";
+            button.disabled = false;
             return;
           }
 
