@@ -260,7 +260,6 @@
         if (batchUris.length === 0 && currentBatch === 0 && !vectorContext) {
             const showMoreButton = document.getElementById('show-more-btn');
             if(showMoreButton) showMoreButton.remove();
-            button.disabled = false; // Re-enable main button
             return;
         }
 
@@ -287,7 +286,6 @@
             responseBox.innerHTML += data.response;
             currentBatch++;
 
-            // --- CORRECTED BUTTON LOGIC ---
             if (currentBatch * BATCH_SIZE < allResultUris.length) {
                 const showMoreButton = document.createElement('button');
                 showMoreButton.id = 'show-more-btn';
@@ -295,14 +293,10 @@
                 showMoreButton.style.cssText = 'display:block; margin: 1em auto; padding: 0.5em 1em; cursor:pointer; border: 1px solid #006747; background-color: #fff; color: #006747; border-radius: 4px;';
                 showMoreButton.onclick = () => fetchAndDisplayBatch(query, vectorContext);
                 responseBox.appendChild(showMoreButton);
-            } else {
-                // This was the last batch, re-enable the main Ask button
-                button.disabled = false;
             }
         } catch (error) {
             console.error("Fetch error:", error);
             responseBox.innerHTML = "Sorry, an error occurred while getting more results.";
-            button.disabled = false; // Also re-enable on error
         }
       };
 
@@ -324,6 +318,10 @@
             body: JSON.stringify({ query: query, collections_only: collectionsOnly }),
           });
 
+          // --- THIS IS THE FIX ---
+          // Re-enable the button immediately after the first request
+          button.disabled = false;
+
           if (!response.ok) throw new Error(`Server error: ${response.status}`);
           
           const data = await response.json();
@@ -332,7 +330,6 @@
           
           if ((!allResultUris || allResultUris.length === 0) && !data.vector_context) {
             responseBox.innerHTML = "<p>No relevant collections or items found in the archives for your query. Please try rephrasing your search.</p>";
-            button.disabled = false;
             return;
           }
 
@@ -341,7 +338,7 @@
         } catch (error) {
           console.error("Fetch error:", error);
           responseBox.innerHTML = "Sorry, an error occurred while searching.";
-          button.disabled = false;
+          button.disabled = false; // Also re-enable on error
         }
       };
 
