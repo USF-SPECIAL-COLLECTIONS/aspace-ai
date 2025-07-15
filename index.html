@@ -326,31 +326,24 @@
           if (!response.ok) throw new Error(`Server error: ${response.status}`);
           
           const data = await response.json();
-          
-          // --- THIS IS THE MAIN FIX ---
-          // It now correctly looks for 'data.aspace_results' instead of 'data.results'
-          allResultUris = data.aspace_results; 
-          
-          // --- ALSO ADDED A SAFETY CHECK ---
-          if (!allResultUris || allResultUris.length === 0) {
-            // Also check if there's any vector context before saying nothing was found
-            if (!data.vector_context) {
-                responseBox.innerHTML = "<p>No relevant collections or items found in the archives for your query. Please try rephrasing your search.</p>";
-                button.disabled = false; // Re-enable button
-                return;
-            }
+          // --- Line 348: CORRECTED VARIABLE NAME ---
+          allResultUris = data.aspace_results;
+
+          if ((!allResultUris || allResultUris.length === 0) && !data.vector_context) {
+            responseBox.innerHTML = "<p>No relevant collections or items found in the archives for your query. Please try rephrasing your search.</p>";
+            button.disabled = false;
+            return;
           }
-          // Fetch and display the first batch of results
-          // Pass the vector context and original query to the next function
+
+          // --- Line 354: PASSING NEW PDF CONTEXT ---
           fetchAndDisplayBatch(query, data.vector_context);
 
         } catch (error) {
           console.error("Fetch error:", error);
           responseBox.innerHTML = "Sorry, an error occurred while searching.";
-          button.disabled = false; // Re-enable button
+          button.disabled = false;
         }
       };
-
       form.addEventListener("submit", handleSubmit);
     });
   </script>
