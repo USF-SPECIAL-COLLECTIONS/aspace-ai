@@ -257,7 +257,12 @@
         const end = start + BATCH_SIZE;
         const batchUris = allResultUris.slice(start, end);
 
-        if (batchUris.length === 0 && currentBatch === 0 && !vectorContext) {
+        // This case handles when only PDF results are found
+        if (batchUris.length === 0 && currentBatch === 0 && vectorContext.length > 0) {
+            // No ASpace URIs to process, but we have vector context.
+            // We can directly process the vector context without showing "More Results".
+        } else if (batchUris.length === 0) {
+            // No more ASpace URIs to process, remove the button and re-enable ask.
             const showMoreButton = document.getElementById('show-more-btn');
             if(showMoreButton) showMoreButton.remove();
             button.disabled = false;
@@ -295,8 +300,7 @@
                 showMoreButton.onclick = () => fetchAndDisplayBatch(query, vectorContext);
                 responseBox.appendChild(showMoreButton);
             } else {
-                // --- THIS IS THE FIX ---
-                // This was the last batch, so re-enable the main Ask button
+                // This was the last batch, re-enable the main Ask button
                 button.disabled = false;
             }
         } catch (error) {
@@ -332,7 +336,7 @@
           // It now correctly looks for 'data.aspace_results'
           allResultUris = data.aspace_results; 
           
-          if ((!allResultUris || allResultUris.length === 0) && !data.vector_context) {
+          if ((!allResultUris || allResultUris.length === 0) && (!data.vector_context || data.vector_context.length === 0)) {
             responseBox.innerHTML = "<p>No relevant collections or items found in the archives for your query. Please try rephrasing your search.</p>";
             button.disabled = false;
             return;
