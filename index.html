@@ -249,20 +249,24 @@
       button.disabled = false;
       input.placeholder = "Ask about the archives...";
       
-      const fetchAndDisplayBatch = async (query) => {
+     const fetchAndDisplayBatch = async (query, vectorContext) => {
         const start = currentBatch * BATCH_SIZE;
         const end = start + BATCH_SIZE;
         const batchUris = allResultUris.slice(start, end);
 
-        if (batchUris.length === 0) {
-            // Remove "Show More" button if no more results
+        // If there are no ASpace results, but there is vector context, process that
+        if (batchUris.length === 0 && currentBatch === 0 && vectorContext) {
+             // Let the backend process just the vector context by sending an empty uris list
+        } else if (batchUris.length === 0) {
             const showMoreButton = document.getElementById('show-more-btn');
             if(showMoreButton) showMoreButton.remove();
             return;
         }
 
-        // Add a "loading more" message if it's not the first batch
         if (currentBatch > 0) {
+            // Remove the old "Show More" button before showing the thinking message
+            const oldShowMoreButton = document.getElementById('show-more-btn');
+            if(oldShowMoreButton) oldShowMoreButton.remove();
             responseBox.innerHTML += 'Thinking<span class="loading-ellipsis"><span>.</span><span>.</span><span>.</span></span>';
         }
 
@@ -270,31 +274,28 @@
             const response = await fetch("https://3umenides.pythonanywhere.com/process_results", {
                 method: "POST",
                 headers: {"Content-Type": "application/json"},
-                body: JSON.stringify({ uris: batchUris, original_query: query }),
+                // Send the batch of URIs AND the vector context
+                body: JSON.stringify({ uris: batchUris, original_query: query, vector_context: vectorContext }),
             });
             const data = await response.json();
 
-            // Replace "Thinking..." message with new results
             if (currentBatch > 0) {
                 responseBox.innerHTML = responseBox.innerHTML.replace(/Thinking<span class="loading-ellipsis">.*?<\/span>/, '');
             } else {
-                responseBox.innerHTML = ''; // Clear initial message
+                responseBox.innerHTML = ''; 
             }
             
-            responseBox.innerHTML += data.response; // Append new results
+            responseBox.innerHTML += data.response;
             currentBatch++;
 
-            // Remove old "Show More" button before adding a new one
-            const oldShowMoreButton = document.getElementById('show-more-btn');
-            if(oldShowMoreButton) oldShowMoreButton.remove();
-
-            // If there are more results left, show the "Show More" button
+            // Check if there are more results left to show
             if (currentBatch * BATCH_SIZE < allResultUris.length) {
                 const showMoreButton = document.createElement('button');
                 showMoreButton.id = 'show-more-btn';
                 showMoreButton.textContent = 'Show More Results';
-                showMoreButton.style.cssText = 'display:block; margin: 1em auto; padding: 0.5em 1em; cursor:pointer;';
-                showMoreButton.onclick = () => fetchAndDisplayBatch(query);
+                showMoreButton.style.cssText = 'display:block; margin: 1em auto; padding: 0.5em 1em; cursor:pointer; border: 1px solid #006747; background-color: #fff; color: #006747; border-radius: 4px;';
+                // Pass the vector context to the next call
+                showMoreButton.onclick = () => fetchAndDisplayBatch(query, vectorContext);
                 responseBox.appendChild(showMoreButton);
             }
         } catch (error) {
@@ -325,21 +326,28 @@
           if (!response.ok) throw new Error(`Server error: ${response.status}`);
           
           const data = await response.json();
-          allResultUris = data.results;
-
-          if (allResultUris.length === 0) {
-            responseBox.innerHTML = "<p>No relevant collections or items found in the archives for your query. Please try rephrasing your search.</p>";
-            return;
+          
+          // --- THIS IS THE MAIN FIX ---
+          // It now correctly looks for 'data.aspace_results' instead of 'data.results'
+          allResultUris = data.aspace_results; 
+          
+          // --- ALSO ADDED A SAFETY CHECK ---
+          if (!allResultUris || allResultUris.length === 0) {
+            // Also check if there's any vector context before saying nothing was found
+            if (!data.vector_context) {
+                responseBox.innerHTML = "<p>No relevant collections or items found in the archives for your query. Please try rephrasing your search.</p>";
+                button.disabled = false; // Re-enable button
+                return;
+            }
           }
-
           // Fetch and display the first batch of results
-          fetchAndDisplayBatch(query);
+          // Pass the vector context and original query to the next function
+          fetchAndDisplayBatch(query, data.vector_context);
 
         } catch (error) {
           console.error("Fetch error:", error);
           responseBox.innerHTML = "Sorry, an error occurred while searching.";
-        } finally {
-          button.disabled = false;
+          button.disabled = false; // Re-enable button
         }
       };
 
