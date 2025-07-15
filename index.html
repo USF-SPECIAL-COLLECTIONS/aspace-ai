@@ -260,6 +260,7 @@
         if (batchUris.length === 0 && currentBatch === 0 && !vectorContext) {
             const showMoreButton = document.getElementById('show-more-btn');
             if(showMoreButton) showMoreButton.remove();
+            button.disabled = false;
             return;
         }
 
@@ -293,10 +294,15 @@
                 showMoreButton.style.cssText = 'display:block; margin: 1em auto; padding: 0.5em 1em; cursor:pointer; border: 1px solid #006747; background-color: #fff; color: #006747; border-radius: 4px;';
                 showMoreButton.onclick = () => fetchAndDisplayBatch(query, vectorContext);
                 responseBox.appendChild(showMoreButton);
+            } else {
+                // --- THIS IS THE FIX ---
+                // This was the last batch, so re-enable the main Ask button
+                button.disabled = false;
             }
         } catch (error) {
             console.error("Fetch error:", error);
             responseBox.innerHTML = "Sorry, an error occurred while getting more results.";
+            button.disabled = false; // Also re-enable on error
         }
       };
 
@@ -318,18 +324,17 @@
             body: JSON.stringify({ query: query, collections_only: collectionsOnly }),
           });
 
-          // --- THIS IS THE FIX ---
-          // Re-enable the button immediately after the first request
-          button.disabled = false;
-
           if (!response.ok) throw new Error(`Server error: ${response.status}`);
           
           const data = await response.json();
           
+          // --- THIS IS THE FIX ---
+          // It now correctly looks for 'data.aspace_results'
           allResultUris = data.aspace_results; 
           
           if ((!allResultUris || allResultUris.length === 0) && !data.vector_context) {
             responseBox.innerHTML = "<p>No relevant collections or items found in the archives for your query. Please try rephrasing your search.</p>";
+            button.disabled = false;
             return;
           }
 
@@ -338,7 +343,7 @@
         } catch (error) {
           console.error("Fetch error:", error);
           responseBox.innerHTML = "Sorry, an error occurred while searching.";
-          button.disabled = false; // Also re-enable on error
+          button.disabled = false;
         }
       };
 
