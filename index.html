@@ -328,6 +328,10 @@
             body: JSON.stringify({ query: query, collections_only: collectionsOnly }),
           });
 
+          // Re-enable the button immediately after the first request
+          // so the user can submit a new query while results load.
+          button.disabled = false;
+
           if (!response.ok) throw new Error(`Server error: ${response.status}`);
           
           const data = await response.json();
@@ -338,7 +342,7 @@
           
           if ((!allResultUris || allResultUris.length === 0) && (!data.vector_context || data.vector_context.length === 0)) {
             responseBox.innerHTML = "<p>No relevant collections or items found in the archives for your query. Please try rephrasing your search.</p>";
-            button.disabled = false;
+            // The button is already re-enabled above, so we just exit.
             return;
           }
 
@@ -347,7 +351,7 @@
         } catch (error) {
           console.error("Fetch error:", error);
           responseBox.innerHTML = "Sorry, an error occurred while searching.";
-          button.disabled = false;
+          button.disabled = false; // Also re-enable on error
         }
       };
 
