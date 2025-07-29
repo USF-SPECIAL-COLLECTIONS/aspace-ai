@@ -235,128 +235,86 @@
     </p>
   </footer>
   
-  <script>
+ <script>
     document.addEventListener("DOMContentLoaded", () => {
+      // Get references to the necessary HTML elements
       const form = document.getElementById("prompt-form");
-      const input = document.getElementById("prompt");
-      const button = form.querySelector("button");
-      const responseBox = document.getElementById("response-box");
+      const queryInput = document.getElementById("prompt");
+      const submitButton = form.querySelector("button[type='submit']");
+      const resultsContainer = document.getElementById("response-box");
       const collectionsOnlyCheckbox = document.getElementById('collections-only-checkbox');
 
-      // Global state for our search results
-      let allResultUris = [];
-      let currentBatch = 0;
-      const BATCH_SIZE = 7;
+      // The base URL for the API
+      const API_BASE_URL = "https://3umenides.pythonanywhere.com";
 
-      input.disabled = false;
-      button.disabled = false;
-      input.placeholder = "Ask about the archives...";
-      
-      const fetchAndDisplayBatch = async (query, vectorContext) => {
-        const start = currentBatch * BATCH_SIZE;
-        const end = start + BATCH_SIZE;
-        const batchUris = allResultUris.slice(start, end);
-
-        // This case handles when only PDF results are found
-        if (batchUris.length === 0 && currentBatch === 0 && vectorContext.length > 0) {
-            // No ASpace URIs to process, but we have vector context.
-            // We can directly process the vector context without showing "More Results".
-        } else if (batchUris.length === 0) {
-            // No more ASpace URIs to process, remove the button and re-enable ask.
-            const showMoreButton = document.getElementById('show-more-btn');
-            if(showMoreButton) showMoreButton.remove();
-            button.disabled = false;
-            return;
-        }
-
-        if (currentBatch > 0) {
-            const oldShowMoreButton = document.getElementById('show-more-btn');
-            if(oldShowMoreButton) oldShowMoreButton.remove();
-            responseBox.innerHTML += 'Thinking<span class="loading-ellipsis"><span>.</span><span>.</span><span>.</span></span>';
-        }
-
-        try {
-            const response = await fetch("https://3umenides.pythonanywhere.com/process_results", {
-                method: "POST",
-                headers: {"Content-Type": "application/json"},
-                body: JSON.stringify({ uris: batchUris, original_query: query, vector_context: vectorContext }),
-            });
-            const data = await response.json();
-
-            if (currentBatch > 0) {
-                responseBox.innerHTML = responseBox.innerHTML.replace(/Thinking<span class="loading-ellipsis">.*?<\/span>/, '');
-            } else {
-                responseBox.innerHTML = ''; 
-            }
-            
-            responseBox.innerHTML += data.response;
-            currentBatch++;
-
-            if (currentBatch * BATCH_SIZE < allResultUris.length) {
-                const showMoreButton = document.createElement('button');
-                showMoreButton.id = 'show-more-btn';
-                showMoreButton.textContent = 'Show More Results';
-                showMoreButton.style.cssText = 'display:block; margin: 1em auto; padding: 0.5em 1em; cursor:pointer; border: 1px solid #006747; background-color: #fff; color: #006747; border-radius: 4px;';
-                showMoreButton.onclick = () => fetchAndDisplayBatch(query, vectorContext);
-                responseBox.appendChild(showMoreButton);
-            } else {
-                // This was the last batch, re-enable the main Ask button
-                button.disabled = false;
-            }
-        } catch (error) {
-            console.error("Fetch error:", error);
-            responseBox.innerHTML = "Sorry, an error occurred while getting more results.";
-            button.disabled = false; // Also re-enable on error
-        }
-      };
-
+      // Main function to handle the form submission
       const handleSubmit = async (event) => {
-        event.preventDefault();
-        const query = input.value.trim();
-        if (!query) return;
+        event.preventDefault(); // Prevent the form from reloading the page
+        const query = queryInput.value.trim();
+        if (!query) return; // Do nothing if the input is empty
 
-        allResultUris = [];
-        currentBatch = 0;
-        const collectionsOnly = collectionsOnlyCheckbox.checked;
-        button.disabled = true;
-        responseBox.innerHTML = 'Finding all potential results<span class="loading-ellipsis"><span>.</span><span>.</span><span>.</span></span>';
+        // Disable the button and show a loading message to the user
+        submitButton.disabled = true;
+        submitButton.textContent = "Searching...";
+        resultsContainer.innerHTML = 'Finding relevant results<span class="loading-ellipsis"><span>.</span><span>.</span><span>.</span></span>';
 
         try {
-          const response = await fetch("https://3umenides.pythonanywhere.com/ask", {
+          // STEP 1: Get the list of result URIs from the /ask endpoint.
+          const askResponse = await fetch(`${API_BASE_URL}/ask`, {
             method: "POST",
-            headers: {"Content-Type": "application/json"},
-            body: JSON.stringify({ query: query, collections_only: collectionsOnly }),
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ query: query, collections_only: collectionsOnlyCheckbox.checked }),
           });
 
-          // Re-enable the button immediately after the first request
-          // so the user can submit a new query while results load.
-          button.disabled = false;
+          if (!askResponse.ok) {
+            throw new Error(`Server error during search: ${askResponse.status}`);
+          }
+          const searchData = await askResponse.json();
 
-          if (!response.ok) throw new Error(`Server error: ${response.status}`);
-          
-          const data = await response.json();
-          
-          // --- THIS IS THE FIX ---
-          // It now correctly looks for 'data.aspace_results'
-          allResultUris = data.aspace_results; 
-          
-          if ((!allResultUris || allResultUris.length === 0) && (!data.vector_context || data.vector_context.length === 0)) {
-            responseBox.innerHTML = "<p>No relevant collections or items found in the archives for your query. Please try rephrasing your search.</p>";
-            // The button is already re-enabled above, so we just exit.
-            return;
+          // Check if any results were found at all.
+          const hasAspaceResults = searchData.aspace_results && searchData.aspace_results.length > 0;
+          const hasVectorContext = searchData.vector_context && searchData.vector_context.length > 0;
+
+          if (!hasAspaceResults && !hasVectorContext) {
+            resultsContainer.innerHTML = "<p>No relevant collections or items were found. Please try rephrasing your search.</p>";
+            return; // Exit the function
           }
 
-          fetchAndDisplayBatch(query, data.vector_context);
+          // Show a new message while the final results are being processed
+          resultsContainer.innerHTML = 'Processing results<span class="loading-ellipsis"><span>.</span><span>.</span><span>.</span></span>';
+
+          // STEP 2: Send the data to the /process_results endpoint to get the final HTML.
+          const processResponse = await fetch(`${API_BASE_URL}/process_results`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              uris: searchData.aspace_results,
+              vector_context: searchData.vector_context,
+              original_query: searchData.original_query
+            }),
+          });
+          
+          if (!processResponse.ok) {
+              throw new Error(`Server error during processing: ${processResponse.status}`);
+          }
+          
+          const finalData = await processResponse.json();
+          resultsContainer.innerHTML = finalData.response; // Display the final HTML in the response box.
 
         } catch (error) {
           console.error("Fetch error:", error);
-          responseBox.innerHTML = "Sorry, an error occurred while searching.";
-          button.disabled = false; // Also re-enable on error
+          resultsContainer.innerHTML = `<p style="color: red;">An error occurred while fetching results. Please try again.</p>`;
+        } finally {
+          // This block will run regardless of success or failure.
+          // Re-enable the button and reset its text.
+          submitButton.disabled = false;
+          submitButton.textContent = "Ask";
         }
       };
 
+      // Listen for the form's submit event
       form.addEventListener("submit", handleSubmit);
     });
-  </script>
+</script>
 </body>
 </html>
