@@ -242,7 +242,6 @@
     const submitButton = form.querySelector("button[type='submit']");
     const collectionsOnlyCheckbox = document.getElementById("collections-only-checkbox");
 
-    // NEW: Define the base URL for your API as a constant
     const API_BASE_URL = "https://3umenides.pythonanywhere.com";
 
     form.addEventListener("submit", async function (event) {
@@ -252,33 +251,32 @@
 
         submitButton.disabled = true;
         submitButton.textContent = "Searching...";
-        resultsContainer.innerHTML = '<div class="loader"></div>'; // Show loader
+        resultsContainer.innerHTML = '<div class="loader"></div>';
 
         const collectionsOnly = collectionsOnlyCheckbox.checked;
 
         try {
-            // UPDATED: Use the API_BASE_URL constant
-            const response = await fetch(`${API_BASE_URL}/ask`, {
+            // First, get the search results from the /ask endpoint
+            const askResponse = await fetch(`${API_BASE_URL}/ask`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({ query: query, collections_only: collectionsOnly }),
             });
 
-            if (!response.ok) {
-                throw new Error(`HTTP error! status: ${response.status}`);
+            if (!askResponse.ok) {
+                throw new Error(`HTTP error! status: ${askResponse.status}`);
             }
 
-            const data = await response.json();
+            const searchData = await askResponse.json();
             
-            // This second fetch is for processing and getting the final HTML
-            // UPDATED: Use the API_BASE_URL constant
+            // Second, send those results to the /process_results endpoint to get the final HTML
             const processResponse = await fetch(`${API_BASE_URL}/process_results`, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify({
-                    uris: data.aspace_results,
-                    vector_context: data.vector_context,
-                    original_query: data.original_query
+                    uris: searchData.aspace_results,
+                    vector_context: searchData.vector_context,
+                    original_query: searchData.original_query
                 }),
             });
 
@@ -287,12 +285,11 @@
             }
 
             const finalData = await processResponse.json();
-            resultsContainer.innerHTML = finalData.response; // Display final HTML from server
+            resultsContainer.innerHTML = finalData.response; // Display the final HTML
 
         } catch (error) {
             console.error("Fetch error:", error);
-            // NEW: Display a user-friendly error message in the results container
-            resultsContainer.innerHTML = `<p class="error">An error occurred while fetching results. Please check the connection and try again.</p>`;
+            resultsContainer.innerHTML = `<p class="error">An error occurred while fetching results. Please check the server logs and try again.</p>`;
         } finally {
             submitButton.disabled = false;
             submitButton.textContent = "Ask";
