@@ -236,9 +236,12 @@
   </footer>
   
   <script>
-    const form = document.getElementById("search-form");
-    const queryInput = document.getElementById("query-input");
-    const resultsContainer = document.getElementById("results-container");
+    // Corrected element IDs to match the HTML
+    const form = document.getElementById("prompt-form");
+    const queryInput = document.getElementById("prompt");
+    const resultsContainer = document.getElementById("response-box"); // This is where the output should go
+    
+    // These selectors were already correct
     const submitButton = form.querySelector("button[type='submit']");
     const collectionsOnlyCheckbox = document.getElementById("collections-only-checkbox");
 
@@ -251,7 +254,8 @@
 
         submitButton.disabled = true;
         submitButton.textContent = "Searching...";
-        resultsContainer.innerHTML = '<div class="loader"></div>';
+        // Adding a visual loading indicator
+        resultsContainer.innerHTML = '<div class="loading-ellipsis"><span>.</span><span>.</span><span>.</span></div>';
 
         const collectionsOnly = collectionsOnlyCheckbox.checked;
 
@@ -289,7 +293,7 @@
 
         } catch (error) {
             console.error("Fetch error:", error);
-            resultsContainer.innerHTML = `<p class="error">An error occurred while fetching results. Please check the server logs and try again.</p>`;
+            resultsContainer.innerHTML = `<p class="error">An error occurred while fetching results. Please try again.</p>`;
         } finally {
             submitButton.disabled = false;
             submitButton.textContent = "Ask";
