@@ -250,62 +250,68 @@
         let currentUriIndex = 0; // Tracks our position in the URI list
         const BATCH_SIZE = 5; // How many results to show per click
 
-        // --- NEW: Function to display ONLY the next batch of ASpace results ---
-        const displayNextAspaceBatch = async (originalQuery) => {
-            const showMoreButton = document.getElementById('show-more-btn');
-            if (showMoreButton) {
-                showMoreButton.disabled = true;
-                showMoreButton.textContent = 'Loading...';
-            }
+        // --- REPLACE the displayNextAspaceBatch function in your current file with this one ---
+const displayNextAspaceBatch = async (originalQuery) => {
+    const showMoreButton = document.getElementById('show-more-btn');
+    
+    // --- FIX: Restore the "Thinking..." logic from the old file ---
+    if (showMoreButton) {
+        showMoreButton.remove(); // Remove the button immediately
+        // Add the "Thinking..." message to the main container
+        resultsContainer.innerHTML += '<div id="thinking-loader" style="text-align:center; padding:1em;">Thinking<span class="loading-ellipsis"><span>.</span><span>.</span><span>.</span></span></div>';
+    }
 
-            const start = currentUriIndex;
-            const end = start + BATCH_SIZE;
-            const batchUris = allAspaceUris.slice(start, end);
+    const start = currentUriIndex;
+    const end = start + BATCH_SIZE;
+    const batchUris = allAspaceUris.slice(start, end);
 
-            if (batchUris.length === 0) {
-                if(showMoreButton) showMoreButton.remove();
-                return; // No more URIs to process
-            }
+    if (batchUris.length === 0) {
+        // If there are no more URIs, just remove the thinking loader if it exists
+        const thinkingLoader = document.getElementById('thinking-loader');
+        if(thinkingLoader) thinkingLoader.remove();
+        return;
+    }
 
-            try {
-                // Call /process_results with ONLY the ASpace URIs.
-                // The vector_context is an empty array to prevent re-rendering "From our Files".
-                const processResponse = await fetch(`${API_BASE_URL}/process_results`, {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({
-                        uris: batchUris,
-                        vector_context: [], // This is the key to the fix!
-                        original_query: originalQuery
-                    }),
-                });
+    try {
+        const processResponse = await fetch(`${API_BASE_URL}/process_results`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+                uris: batchUris,
+                vector_context: [],
+                original_query: originalQuery
+            }),
+        });
 
-                if (!processResponse.ok) throw new Error(`Server error: ${processResponse.status}`);
+        if (!processResponse.ok) throw new Error(`Server error: ${processResponse.status}`);
 
-                const finalData = await processResponse.json();
-                
-                // Append the new cards instead of replacing the content
-                resultsContainer.innerHTML += finalData.response;
-                currentUriIndex = end; // Move the index for the next batch
+        const finalData = await processResponse.json();
+        
+        // --- FIX: Remove the "Thinking..." message before adding new content ---
+        const thinkingLoader = document.getElementById('thinking-loader');
+        if(thinkingLoader) thinkingLoader.remove();
+        
+        resultsContainer.innerHTML += finalData.response;
+        currentUriIndex = end;
 
-            } catch (error) {
-                console.error("Fetch error:", error);
-                resultsContainer.innerHTML += `<p class="error">An error occurred while fetching more results.</p>`;
-            } finally {
-                // Remove the old button before creating a new one
-                if(showMoreButton) showMoreButton.remove();
-
-                // If there are more results left, create a new "Show More" button
-                if (currentUriIndex < allAspaceUris.length) {
-                    const newShowMoreButton = document.createElement('button');
-                    newShowMoreButton.id = 'show-more-btn';
-                    newShowMoreButton.textContent = 'Show More Results';
-                    newShowMoreButton.style.cssText = 'display:block; margin: 1em auto; padding: 0.5em 1em; cursor:pointer;';
-                    newShowMoreButton.onclick = () => displayNextAspaceBatch(originalQuery);
-                    resultsContainer.appendChild(newShowMoreButton);
-                }
-            }
-        };
+    } catch (error) {
+        console.error("Fetch error:", error);
+        // Also remove the "Thinking..." message on error
+        const thinkingLoader = document.getElementById('thinking-loader');
+        if(thinkingLoader) thinkingLoader.remove();
+        resultsContainer.innerHTML += `<p class="error">An error occurred while fetching more results.</p>`;
+    } finally {
+        // The finally block now only needs to create the *next* button if needed
+        if (currentUriIndex < allAspaceUris.length) {
+            const newShowMoreButton = document.createElement('button');
+            newShowMoreButton.id = 'show-more-btn';
+            newShowMoreButton.textContent = 'Show More Results';
+            newShowMoreButton.style.cssText = 'display:block; margin: 1em auto; padding: 0.5em 1em; cursor:pointer;';
+            newShowMoreButton.onclick = () => displayNextAspaceBatch(originalQuery);
+            resultsContainer.appendChild(newShowMoreButton);
+        }
+    }
+};
 
         // --- MODIFIED: The main function to handle the initial form submission ---
         const handleSubmit = async (event) => {
