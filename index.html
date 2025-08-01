@@ -258,7 +258,7 @@ const displayNextAspaceBatch = async (originalQuery) => {
     if (showMoreButton) {
         showMoreButton.remove(); // Remove the button immediately
         // Add the "Thinking..." message to the main container
-      resultsContainer.innerHTML += '<div id="thinking-loader" style="text-align:center; padding:1em;">Thinking<span class="loading-ellipsis"><span>.</span><span>.</span><span>.</span></span></div>';
+      resultsContainer.innerHTML = '<div style="text-align:center; padding:1em;">Finding relevant results<span class="loading-ellipsis"><span>.</span><span>.</span><span>.</span></span></div>';
     }
 
     const start = currentUriIndex;
