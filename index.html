@@ -222,8 +222,7 @@
 </head>
 
 <body>
-  <!-- USF Green Header -->
-<header class="main-header">
+  <header class="main-header">
     University of South Florida Libraries – Special Collections
   </header>
 
@@ -253,6 +252,10 @@
         <input type="checkbox" id="collections-only-checkbox">
         Search collection titles only
       </label>
+      <label style="margin-left: 1em;">
+        <input type="checkbox" id="experimental-model-checkbox">
+        Use Experimental Model
+      </label>
     </div>
 
     <div id="response-container">
@@ -274,6 +277,7 @@
         const submitButton = form.querySelector("button[type='submit']");
         const resultsContainer = document.getElementById("response-box");
         const collectionsOnlyCheckbox = document.getElementById('collections-only-checkbox');
+        const experimentalModelCheckbox = document.getElementById('experimental-model-checkbox'); // ✅ GET THE NEW CHECKBOX
 
         const API_BASE_URL = "https://3umenides.pythonanywhere.com";
 
@@ -282,14 +286,11 @@
         let currentUriIndex = 0; 
         const BATCH_SIZE = 5; 
 
-        // This function now correctly handles loading subsequent batches
         const displayNextAspaceBatch = async (originalQuery) => {
             const showMoreButton = document.getElementById('show-more-btn');
             
-            // This logic now correctly shows "Thinking..." for the "Show More" action
             if (showMoreButton) {
-                showMoreButton.remove(); // Remove the button immediately
-                // Note the use of 'innerHTML +=' to APPEND the message, not replace content
+                showMoreButton.remove();
                 resultsContainer.innerHTML += '<div id="thinking-loader" style="text-align:center; padding:1em;">Thinking<span class="loading-ellipsis"><span>.</span><span>.</span><span>.</span></span></div>';
             }
 
@@ -304,7 +305,11 @@
             }
 
             try {
-                const processResponse = await fetch(`${API_BASE_URL}/process_results`, {
+                // ✅ SWITCH ENDPOINT BASED ON TOGGLE
+                const useExperimental = experimentalModelCheckbox.checked;
+                const processEndpoint = useExperimental ? "/test_process_results" : "/process_results";
+
+                const processResponse = await fetch(`${API_BASE_URL}${processEndpoint}`, {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({
@@ -317,7 +322,6 @@
                 if (!processResponse.ok) throw new Error(`Server error: ${processResponse.status}`);
                 const finalData = await processResponse.json();
                 
-                // Remove the "Thinking..." message before adding the new result cards
                 const thinkingLoader = document.getElementById('thinking-loader');
                 if(thinkingLoader) thinkingLoader.remove();
                 
@@ -330,7 +334,6 @@
                 if(thinkingLoader) thinkingLoader.remove();
                 resultsContainer.innerHTML += `<p class="error">An error occurred while fetching more results.</p>`;
             } finally {
-                // Create the next "Show More" button if there are still results left
                 if (currentUriIndex < allAspaceUris.length) {
                     const newShowMoreButton = document.createElement('button');
                     newShowMoreButton.id = 'show-more-btn';
@@ -342,24 +345,26 @@
             }
         };
 
-        // This function now correctly handles the initial search submission
         const handleSubmit = async (event) => {
             event.preventDefault();
             const query = queryInput.value.trim();
             if (!query) return;
 
-            // Reset state for the new search
             allAspaceUris = [];
             currentUriIndex = 0;
             submitButton.disabled = true;
             submitButton.textContent = "Searching...";
             
-            // --- THIS IS THE CORRECTED INITIAL LOADING MESSAGE ---
             resultsContainer.innerHTML = '<div style="text-align:center; padding:1em;"><p style="font-size: 1em; margin-bottom: 0.5em;">Finding relevant results</p><div class="loading-ellipsis"><span>.</span><span>.</span><span>.</span></div></div>';
 
             try {
+                // ✅ SWITCH ENDPOINTS BASED ON TOGGLE
+                const useExperimental = experimentalModelCheckbox.checked;
+                const askEndpoint = useExperimental ? "/test_ask" : "/ask";
+                const processEndpoint = useExperimental ? "/test_process_results" : "/process_results";
+
                 // Step 1: Get all results from the backend
-                const askResponse = await fetch(`${API_BASE_URL}/ask`, {
+                const askResponse = await fetch(`${API_BASE_URL}${askEndpoint}`, {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({ query: query, collections_only: collectionsOnlyCheckbox.checked }),
@@ -371,7 +376,7 @@
                 allAspaceUris = searchData.aspace_results || [];
 
                 // Step 2: Render the initial "From our Files" section
-                const initialProcessResponse = await fetch(`${API_BASE_URL}/process_results`, {
+                const initialProcessResponse = await fetch(`${API_BASE_URL}${processEndpoint}`, {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({
