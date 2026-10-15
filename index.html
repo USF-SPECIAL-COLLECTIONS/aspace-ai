@@ -251,4 +251,137 @@
     </p>
   </footer>
   
-  <script
+ <script>
+    document.addEventListener("DOMContentLoaded", () => {
+      const API_BASE_URL = "https://3umenides.pythonanywhere.com";
+      const BATCH_SIZE = 3;
+      let allAspaceUris = [];
+      let currentUriIndex = 0;
+
+      const form = document.getElementById("prompt-form");
+      const queryInput = document.getElementById("prompt");
+      const submitButton = form.querySelector("button[type='submit']");
+      const resultsContainer = document.getElementById("response-box");
+
+      function appendShowMoreButton(originalQuery) {
+        const existingBtn = document.getElementById("show-more-btn");
+        if (existingBtn) existingBtn.remove();
+
+        if (currentUriIndex < allAspaceUris.length) {
+          const btn = document.createElement("button");
+          btn.id = "show-more-btn";
+          btn.textContent = "Show More Results";
+          btn.style.cssText = "display:block; margin:1em auto; padding:0.5em 1em; cursor:pointer;";
+          btn.onclick = () => displayNextAspaceBatch(originalQuery);
+          resultsContainer.appendChild(btn);
+        }
+      }
+
+      async function displayNextAspaceBatch(originalQuery) {
+        const showMoreBtn = document.getElementById("show-more-btn");
+        if (showMoreBtn) showMoreBtn.remove();
+
+        const batchUris = allAspaceUris.slice(currentUriIndex, currentUriIndex + BATCH_SIZE);
+        if (batchUris.length === 0) return;
+
+        const cardsSection = document.getElementById("cards-section") || resultsContainer;
+        const loader = document.createElement("div");
+        loader.style.cssText = "text-align:center; padding:1em;";
+        loader.innerHTML = 'Loading more collections<span class="loading-ellipsis"><span>.</span><span>.</span><span>.</span></span>';
+        cardsSection.appendChild(loader);
+
+        try {
+          const res = await fetch(`${API_BASE_URL}/get_cards`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ uris: batchUris, original_query: originalQuery })
+          });
+          const data = await res.json();
+          loader.remove();
+          const cleanHtml = (data.response || "").replace("<h3>Related Archival Collections:</h3>", "");
+          cardsSection.insertAdjacentHTML("beforeend", cleanHtml);
+          currentUriIndex += BATCH_SIZE;
+        } catch (err) {
+          loader.remove();
+          cardsSection.insertAdjacentHTML("beforeend", '<p class="error">An error occurred while fetching more results.</p>');
+        } finally {
+          appendShowMoreButton(originalQuery);
+        }
+      }
+
+      form.addEventListener("submit", async (event) => {
+        event.preventDefault();
+        const query = queryInput.value.trim();
+        if (!query) return;
+
+        allAspaceUris = [];
+        currentUriIndex = 0;
+        submitButton.disabled = true;
+        submitButton.textContent = "Searching...";
+        resultsContainer.innerHTML = '<div style="text-align:center; padding:1em;"><p>Finding relevant results</p><div class="loading-ellipsis"><span>.</span><span>.</span><span>.</span></div></div>';
+
+        try {
+          const askRes = await fetch(`${API_BASE_URL}/ask`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ query: query })
+          });
+          const searchData = await askRes.json();
+          allAspaceUris = searchData.aspace_results || [];
+          const vectorContext = searchData.vector_context || [];
+
+          if (allAspaceUris.length === 0 && vectorContext.length === 0) {
+            resultsContainer.innerHTML = "<p>No relevant information was found for your query.</p>";
+            return;
+          }
+
+          resultsContainer.innerHTML = '<div id="summary-section"></div><div id="cards-section"></div>';
+          const summarySection = document.getElementById("summary-section");
+          const cardsSection = document.getElementById("cards-section");
+          const tasks = [];
+
+          if (vectorContext.length > 0) {
+            summarySection.innerHTML = '<div style="text-align:center; padding:0.5em;">Synthesizing document answer<span class="loading-ellipsis"><span>.</span><span>.</span><span>.</span></span></div>';
+            tasks.push(
+              fetch(`${API_BASE_URL}/get_summary`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ vector_context: vectorContext, original_query: searchData.original_query })
+              })
+              .then(r => r.json())
+              .then(d => { summarySection.innerHTML = d.response || ""; })
+              .catch(() => { summarySection.innerHTML = ""; })
+            );
+          }
+
+          if (allAspaceUris.length > 0) {
+            const firstBatch = allAspaceUris.slice(0, BATCH_SIZE);
+            currentUriIndex = BATCH_SIZE;
+            cardsSection.innerHTML = '<div style="text-align:center; padding:0.5em;">Loading archival collections<span class="loading-ellipsis"><span>.</span><span>.</span><span>.</span></span></div>';
+            tasks.push(
+              fetch(`${API_BASE_URL}/get_cards`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ uris: firstBatch, original_query: searchData.original_query })
+              })
+              .then(r => r.json())
+              .then(d => {
+                cardsSection.innerHTML = d.response || "";
+                appendShowMoreButton(query);
+              })
+              .catch(() => { cardsSection.innerHTML = ""; })
+            );
+          }
+
+          await Promise.all(tasks);
+        } catch (err) {
+          resultsContainer.innerHTML = '<p class="error">An error occurred while searching.</p>';
+        } finally {
+          submitButton.disabled = false;
+          submitButton.textContent = "Ask";
+        }
+      });
+    });
+  </script>
+</body>
+</html>
