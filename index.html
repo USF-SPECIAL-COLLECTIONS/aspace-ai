@@ -252,6 +252,7 @@
   </footer>
   
   <script>
+    <script>
     document.addEventListener("DOMContentLoaded", () => {
         const form = document.getElementById("prompt-form");
         const queryInput = document.getElementById("prompt");
@@ -260,63 +261,62 @@
 
         const API_BASE_URL = "https://3umenides.pythonanywhere.com";
 
-        // State management variables
         let allAspaceUris = []; 
         let currentUriIndex = 0; 
-        const BATCH_SIZE = 3; // Matches backend slice [:3] in main.py
+        const BATCH_SIZE = 3;
+
+        const appendShowMoreButton = (originalQuery) => {
+            const existingBtn = document.getElementById('show-more-btn');
+            if (existingBtn) existingBtn.remove();
+
+            if (currentUriIndex < allAspaceUris.length) {
+                const newShowMoreButton = document.createElement('button');
+                newShowMoreButton.id = 'show-more-btn';
+                newShowMoreButton.textContent = 'Show More Results';
+                newShowMoreButton.style.cssText = 'display:block; margin: 1em auto; padding: 0.5em 1em; cursor:pointer;';
+                newShowMoreButton.onclick = () => displayNextAspaceBatch(originalQuery);
+                resultsContainer.appendChild(newShowMoreButton);
+            }
+        };
 
         const displayNextAspaceBatch = async (originalQuery) => {
             const showMoreButton = document.getElementById('show-more-btn');
-            
-            if (showMoreButton) {
-                showMoreButton.remove();
-                resultsContainer.innerHTML += '<div id="thinking-loader" style="text-align:center; padding:1em;">Thinking<span class="loading-ellipsis"><span>.</span><span>.</span><span>.</span></span></div>';
-            }
+            if (showMoreButton) showMoreButton.remove();
 
             const start = currentUriIndex;
             const end = start + BATCH_SIZE;
             const batchUris = allAspaceUris.slice(start, end);
 
-            if (batchUris.length === 0) {
-                const thinkingLoader = document.getElementById('thinking-loader');
-                if (thinkingLoader) thinkingLoader.remove();
-                return;
-            }
+            if (batchUris.length === 0) return;
+
+            const loader = document.createElement('div');
+            loader.id = 'thinking-loader';
+            loader.style.cssText = 'text-align:center; padding:1em;';
+            loader.innerHTML = 'Loading related collections<span class="loading-ellipsis"><span>.</span><span>.</span><span>.</span></span>';
+            resultsContainer.appendChild(loader);
 
             try {
-                const processResponse = await fetch(`${API_BASE_URL}/process_results`, {
+                const cardsResponse = await fetch(`${API_BASE_URL}/get_cards`, {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({
                         uris: batchUris,
-                        vector_context: [],
                         original_query: originalQuery
                     }),
                 });
 
-                if (!processResponse.ok) throw new Error(`Server error: ${processResponse.status}`);
-                const finalData = await processResponse.json();
+                if (!cardsResponse.ok) throw new Error(`Server error: ${cardsResponse.status}`);
+                const cardsData = await cardsResponse.json();
                 
-                const thinkingLoader = document.getElementById('thinking-loader');
-                if (thinkingLoader) thinkingLoader.remove();
-                
-                resultsContainer.innerHTML += finalData.response;
+                loader.remove();
+                resultsContainer.insertAdjacentHTML('beforeend', cardsData.response);
                 currentUriIndex = end;
-
             } catch (error) {
                 console.error("Fetch error:", error);
-                const thinkingLoader = document.getElementById('thinking-loader');
-                if (thinkingLoader) thinkingLoader.remove();
-                resultsContainer.innerHTML += `<p class="error">An error occurred while fetching more results.</p>`;
+                loader.remove();
+                resultsContainer.insertAdjacentHTML('beforeend', `<p class="error">An error occurred while fetching collection cards.</p>`);
             } finally {
-                if (currentUriIndex < allAspaceUris.length) {
-                    const newShowMoreButton = document.createElement('button');
-                    newShowMoreButton.id = 'show-more-btn';
-                    newShowMoreButton.textContent = 'Show More Results';
-                    newShowMoreButton.style.cssText = 'display:block; margin: 1em auto; padding: 0.5em 1em; cursor:pointer;';
-                    newShowMoreButton.onclick = () => displayNextAspaceBatch(originalQuery);
-                    resultsContainer.appendChild(newShowMoreButton);
-                }
+                appendShowMoreButton(originalQuery);
             }
         };
 
@@ -333,7 +333,7 @@
             resultsContainer.innerHTML = '<div style="text-align:center; padding:1em;"><p style="font-size: 1em; margin-bottom: 0.5em;">Finding relevant results</p><div class="loading-ellipsis"><span>.</span><span>.</span><span>.</span></div></div>';
 
             try {
-                // Step 1: Get vector context and ASpace URIs from the backend
+                // Step 1: Run fast parallel search on backend
                 const askResponse = await fetch(`${API_BASE_URL}/ask`, {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
@@ -341,32 +341,69 @@
                 });
 
                 if (!askResponse.ok) throw new Error(`Server error: ${askResponse.status}`);
-                
                 const searchData = await askResponse.json();
+                
                 allAspaceUris = searchData.aspace_results || [];
+                const vectorContext = searchData.vector_context || [];
 
-                // Step 2: Render the initial "From our Files" section
-                const initialProcessResponse = await fetch(`${API_BASE_URL}/process_results`, {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({
-                        uris: [], 
-                        vector_context: searchData.vector_context,
-                        original_query: searchData.original_query
-                    }),
-                });
-
-                if (!initialProcessResponse.ok) throw new Error(`Server error: ${initialProcessResponse.status}`);
-
-                const initialData = await initialProcessResponse.json();
-                resultsContainer.innerHTML = initialData.response; 
-
-                // Step 3: Display the first batch of ASpace results
-                if (allAspaceUris.length > 0) {
-                    await displayNextAspaceBatch(query);
-                } else if (!searchData.vector_context || searchData.vector_context.length === 0) {
+                if (allAspaceUris.length === 0 && vectorContext.length === 0) {
                     resultsContainer.innerHTML = "<p>No relevant information was found for your query.</p>";
+                    return;
                 }
+
+                // Set up two dedicated slots so Summary and Cards can load in parallel without overwriting each other
+                resultsContainer.innerHTML = `
+                    <div id="summary-section"></div>
+                    <div id="cards-section"></div>
+                `;
+                const summarySection = document.getElementById("summary-section");
+                const cardsSection = document.getElementById("cards-section");
+
+                const tasks = [];
+
+                // Task A: Fetch "From our Files" Summary immediately
+                if (vectorContext.length > 0) {
+                    summarySection.innerHTML = '<div style="text-align:center; padding:0.5em;">Synthesizing document answer<span class="loading-ellipsis"><span>.</span><span>.</span><span>.</span></span></div>';
+                    const summaryTask = fetch(`${API_BASE_URL}/get_summary`, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                            vector_context: vectorContext,
+                            original_query: searchData.original_query
+                        }),
+                    })
+                    .then(res => res.json())
+                    .then(data => { summarySection.innerHTML = data.response; })
+                    .catch(() => { summarySection.innerHTML = ""; });
+                    
+                    tasks.push(summaryTask);
+                }
+
+                // Task B: Fetch first 3 ASpace Cards AT THE SAME TIME
+                if (allAspaceUris.length > 0) {
+                    const firstBatch = allAspaceUris.slice(0, BATCH_SIZE);
+                    currentUriIndex = BATCH_SIZE;
+                    cardsSection.innerHTML = '<div style="text-align:center; padding:0.5em;">Loading archival collections<span class="loading-ellipsis"><span>.</span><span>.</span><span>.</span></span></div>';
+                    
+                    const cardsTask = fetch(`${API_BASE_URL}/get_cards`, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({
+                            uris: firstBatch,
+                            original_query: searchData.original_query
+                        }),
+                    })
+                    .then(res => res.json())
+                    .then(data => {
+                        cardsSection.innerHTML = data.response;
+                        appendShowMoreButton(query);
+                    })
+                    .catch(() => { cardsSection.innerHTML = ""; });
+
+                    tasks.push(cardsTask);
+                }
+
+                await Promise.all(tasks);
 
             } catch (error) {
                 console.error("Fetch error:", error);
@@ -380,5 +417,3 @@
         form.addEventListener("submit", handleSubmit);
     });
   </script>
-</body>
-</html>
