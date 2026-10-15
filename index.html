@@ -5,7 +5,7 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>AI Archives Assistant</title>
-    <style>
+  <style>
     /* Google Font for a look similar to the library site */
     @import url('https://fonts.googleapis.com/css2?family=Roboto:wght@400;700&display=swap');
 
@@ -26,7 +26,7 @@
       margin: 0;
     }
 
-    /* 1. New Main Header Style */
+    /* 1. Main Header Style */
     .main-header {
       background-color: var(--usf-green);
       color: white;
@@ -43,10 +43,10 @@
     }
 
     #logo {
-       width: 150px;
-       height: auto;
-       display: block;
-       margin: 0 auto 1.5em auto;
+      width: 150px;
+      height: auto;
+      display: block;
+      margin: 0 auto 1.5em auto;
     }
     
     h1 {
@@ -54,7 +54,7 @@
       font-weight: bold;
     }
 
-    /* 2. New Introductory Text Style */
+    /* 2. Introductory Text Style */
     .intro-text {
       text-align: center;
       font-size: 1.1em;
@@ -62,7 +62,7 @@
       margin-bottom: 2em;
     }
 
-    /* 3. New Form & Button Styles */
+    /* 3. Form & Button Styles */
     #prompt-form {
       display: flex;
       margin-bottom: 2em;
@@ -87,7 +87,7 @@
       transition: background-color 0.2s;
     }
     #prompt-form button:hover:not(:disabled) {
-      background-color: #004a32; /* A darker green for hover */
+      background-color: #004a32;
     }
     #prompt-form button:disabled {
       background-color: #999;
@@ -95,9 +95,6 @@
     }
 
     /* 4. Refined Response Box */
-    #response-container {
- 
-    }
     #response-box {
       background-color: #ffffff;
       border: 1px solid var(--border-color);
@@ -122,13 +119,13 @@
     footer a:hover {
       text-decoration: underline;
     }
-      .footer-disclaimer {
+    .footer-disclaimer {
       font-size: 0.8rem;
-      color: #6c757d; /* A subtle gray color */
+      color: #6c757d;
       margin-top: 1rem;
     }
 
-    /* Keep your existing result-card and loading-ellipsis styles here */
+    /* Result-card and loading-ellipsis styles */
     .result-card {
       display: flex;
       align-items: flex-start;
@@ -147,15 +144,14 @@
       margin-top: 0.2rem;
       flex-shrink: 0;
     }
-      /* New styles for the two-column source info */
     .source-info-container {
       display: flex;
       gap: 1.5rem;
-      margin-top: 1em; /* This was moved from #response-container */
+      margin-top: 1em;
       margin-bottom: 2em;
     }
     .source-card {
-      flex: 1; /* Each card takes up equal space */
+      flex: 1;
       background-color: #fff;
       border: 1px solid var(--border-color);
       padding: 1.5em;
@@ -167,9 +163,9 @@
       font-size: 1.1em;
     }
     .source-card p {
-        margin-bottom: 0;
-        line-height: 1.5;
-        font-size: 0.95em;
+      margin-bottom: 0;
+      line-height: 1.5;
+      font-size: 0.95em;
     }
     .result-card .details {
       flex: 1;
@@ -208,15 +204,9 @@
       animation-delay: 0.4s;
     }
     @keyframes loading-fade {
-      0% {
-        opacity: 0;
-      }
-      50% {
-        opacity: 1;
-      }
-      100% {
-        opacity: 0;
-      }
+      0% { opacity: 0; }
+      50% { opacity: 1; }
+      100% { opacity: 0; }
     }
   </style>
 </head>
@@ -226,7 +216,7 @@
     University of South Florida Libraries – Special Collections
   </header>
 
-<div class="content-wrapper">
+  <div class="content-wrapper">
     <img id="logo" src="logo.png" alt="USF Libraries Logo">
     <h1>AI Archives Assistant</h1>
 
@@ -242,21 +232,12 @@
         <h3>Digitized Documents</h3>
         <p>Get direct answers from the full text of selected digitized books, and university publications from Special Collections.</p>
       </div>
-    </div> <form id="prompt-form">
+    </div>
+
+    <form id="prompt-form">
       <input type="text" id="prompt" name="prompt" placeholder="e.g., do you have anything about Tampa's early history..." />
       <button type="submit">Ask</button>
     </form>
-   
-    <div class="search-options" style="margin-top: -1.5em; margin-bottom: 2em; font-size: 0.9em; text-align: right; padding-right: 0.5em;">
-      <label>
-        <input type="checkbox" id="collections-only-checkbox">
-        Search collection titles only
-      </label>
-      <label style="margin-left: 1em;">
-        <input type="checkbox" id="experimental-model-checkbox">
-        Use Experimental Model
-      </label>
-    </div>
 
     <div id="response-container">
       <div id="response-box"></div>
@@ -276,15 +257,13 @@
         const queryInput = document.getElementById("prompt");
         const submitButton = form.querySelector("button[type='submit']");
         const resultsContainer = document.getElementById("response-box");
-        const collectionsOnlyCheckbox = document.getElementById('collections-only-checkbox');
-        const experimentalModelCheckbox = document.getElementById('experimental-model-checkbox'); // ✅ GET THE NEW CHECKBOX
 
         const API_BASE_URL = "https://3umenides.pythonanywhere.com";
 
         // State management variables
         let allAspaceUris = []; 
         let currentUriIndex = 0; 
-        const BATCH_SIZE = 5; 
+        const BATCH_SIZE = 3; // Matches backend slice [:3] in main.py
 
         const displayNextAspaceBatch = async (originalQuery) => {
             const showMoreButton = document.getElementById('show-more-btn');
@@ -300,16 +279,12 @@
 
             if (batchUris.length === 0) {
                 const thinkingLoader = document.getElementById('thinking-loader');
-                if(thinkingLoader) thinkingLoader.remove();
+                if (thinkingLoader) thinkingLoader.remove();
                 return;
             }
 
             try {
-                // ✅ SWITCH ENDPOINT BASED ON TOGGLE
-                const useExperimental = experimentalModelCheckbox.checked;
-                const processEndpoint = useExperimental ? "/test_process_results" : "/process_results";
-
-                const processResponse = await fetch(`${API_BASE_URL}${processEndpoint}`, {
+                const processResponse = await fetch(`${API_BASE_URL}/process_results`, {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({
@@ -323,7 +298,7 @@
                 const finalData = await processResponse.json();
                 
                 const thinkingLoader = document.getElementById('thinking-loader');
-                if(thinkingLoader) thinkingLoader.remove();
+                if (thinkingLoader) thinkingLoader.remove();
                 
                 resultsContainer.innerHTML += finalData.response;
                 currentUriIndex = end;
@@ -331,7 +306,7 @@
             } catch (error) {
                 console.error("Fetch error:", error);
                 const thinkingLoader = document.getElementById('thinking-loader');
-                if(thinkingLoader) thinkingLoader.remove();
+                if (thinkingLoader) thinkingLoader.remove();
                 resultsContainer.innerHTML += `<p class="error">An error occurred while fetching more results.</p>`;
             } finally {
                 if (currentUriIndex < allAspaceUris.length) {
@@ -358,16 +333,11 @@
             resultsContainer.innerHTML = '<div style="text-align:center; padding:1em;"><p style="font-size: 1em; margin-bottom: 0.5em;">Finding relevant results</p><div class="loading-ellipsis"><span>.</span><span>.</span><span>.</span></div></div>';
 
             try {
-                // ✅ SWITCH ENDPOINTS BASED ON TOGGLE
-                const useExperimental = experimentalModelCheckbox.checked;
-                const askEndpoint = useExperimental ? "/test_ask" : "/ask";
-                const processEndpoint = useExperimental ? "/test_process_results" : "/process_results";
-
-                // Step 1: Get all results from the backend
-                const askResponse = await fetch(`${API_BASE_URL}${askEndpoint}`, {
+                // Step 1: Get vector context and ASpace URIs from the backend
+                const askResponse = await fetch(`${API_BASE_URL}/ask`, {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ query: query, collections_only: collectionsOnlyCheckbox.checked }),
+                    body: JSON.stringify({ query: query }),
                 });
 
                 if (!askResponse.ok) throw new Error(`Server error: ${askResponse.status}`);
@@ -376,7 +346,7 @@
                 allAspaceUris = searchData.aspace_results || [];
 
                 // Step 2: Render the initial "From our Files" section
-                const initialProcessResponse = await fetch(`${API_BASE_URL}${processEndpoint}`, {
+                const initialProcessResponse = await fetch(`${API_BASE_URL}/process_results`, {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
                     body: JSON.stringify({
@@ -385,6 +355,8 @@
                         original_query: searchData.original_query
                     }),
                 });
+
+                if (!initialProcessResponse.ok) throw new Error(`Server error: ${initialProcessResponse.status}`);
 
                 const initialData = await initialProcessResponse.json();
                 resultsContainer.innerHTML = initialData.response; 
